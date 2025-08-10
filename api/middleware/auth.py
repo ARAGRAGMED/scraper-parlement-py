@@ -1,29 +1,40 @@
 #!/usr/bin/env python3
 """
-Authentication middleware for API key verification
+Authentication middleware for the Moroccan Parliament API
 """
 
-import os
-from fastapi import HTTPException, Header
+from fastapi import HTTPException, Depends, Header
+from typing import Optional
 
-# Authentication configuration
-API_KEY = os.environ.get("API_KEY", "your-secret-api-key-here")
-API_KEY_NAME = "X-API-Key"
-
-async def verify_api_key(x_api_key: str = Header(None, alias=API_KEY_NAME)):
-    """Verify API key for protected endpoints"""
+async def verify_api_key(x_api_key: Optional[str] = Header(None)) -> str:
+    """
+    Verify API key from request header
+    
+    Args:
+        x_api_key: API key from X-API-Key header
+        
+    Returns:
+        The verified API key
+        
+    Raises:
+        HTTPException: If API key is missing or invalid
+    """
     if not x_api_key:
         raise HTTPException(
-            status_code=401, 
+            status_code=401,
             detail="API key required",
-            headers={"WWW-Authenticate": f"{API_KEY_NAME}"}
+            headers={"WWW-Authenticate": "ApiKey"},
         )
     
-    if x_api_key != API_KEY:
+    # For now, use a simple hardcoded key
+    # In production, this should be stored securely and validated against a database
+    expected_key = "your-secret-api-key-here"
+    
+    if x_api_key != expected_key:
         raise HTTPException(
-            status_code=403, 
+            status_code=403,
             detail="Invalid API key",
-            headers={"WWW-Authenticate": f"{API_KEY_NAME}"}
+            headers={"WWW-Authenticate": "ApiKey"},
         )
     
     return x_api_key

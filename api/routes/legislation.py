@@ -4,7 +4,13 @@ Legislation routes for the Moroccan Parliament API
 """
 
 from fastapi import APIRouter
-from services.data_service import DataService
+
+# Import services with absolute imports for Vercel compatibility
+try:
+    from api.services.data_service import DataService
+except ImportError:
+    # Fallback for local development
+    from services.data_service import DataService
 
 router = APIRouter()
 

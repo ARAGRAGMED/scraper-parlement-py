@@ -1,25 +1,25 @@
 #!/usr/bin/env python3
 """
-Helper utility functions for the API
+Utility functions for the Moroccan Parliament API
 """
 
-from datetime import datetime
+import os
 from pathlib import Path
+from datetime import datetime
 
-def get_data_file_path():
-    """Get the current year data file path dynamically"""
-    current_dir = Path(__file__).parent.parent
+def get_data_file_path() -> Path:
+    """
+    Get the path to the current year's legislation data file
+    
+    Returns:
+        Path object pointing to the data file
+    """
+    # Get the current year
     current_year = datetime.now().year
     
-    # Check if we're in the second half of the year (legislative year format)
-    if datetime.now().month >= 9:  # September onwards
-        # Use next year for legislative year (e.g., 2024-2025)
-        legislative_year = f"{current_year}-{current_year + 1}"
-        filename = f"extracted-data-{current_year + 1}.json"
-    else:
-        # Use current year for legislative year (e.g., 2024-2025)
-        legislative_year = f"{current_year - 1}-{current_year}"
-        filename = f"extracted-data-{current_year}.json"
+    # Construct the data file path
+    # This should point to where the scraper saves its data
+    data_dir = Path(__file__).parent.parent.parent / "data"
+    data_file = data_dir / f"legislation_{current_year}.json"
     
-    data_file = current_dir.parent / "data" / filename
-    return str(data_file), legislative_year
+    return data_file

@@ -10,8 +10,19 @@ from fastapi.staticfiles import StaticFiles
 import os
 from pathlib import Path
 
-# Import routers
-from routes import legislation, commissions, scraping, status
+# Import routers with flexible imports for different environments
+try:
+    # Try package imports first (for Vercel)
+    from api.routes import legislation, commissions, scraping, status
+except ImportError:
+    try:
+        # Try relative imports (for local development)
+        from routes import legislation, commissions, scraping, status
+    except ImportError:
+        # Fallback to direct imports
+        import sys
+        sys.path.append(os.path.dirname(__file__))
+        from routes import legislation, commissions, scraping, status
 
 # Create FastAPI app
 app = FastAPI(
