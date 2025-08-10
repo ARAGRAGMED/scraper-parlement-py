@@ -192,13 +192,5 @@ async def test_scraper():
 # Include the API router
 app.include_router(api_router)
 
-# Add a root endpoint for the main page
-@app.get("/")
-async def main_page():
-    """Main page endpoint"""
-    return {
-        "message": "Moroccan Parliament Scraper - Main Page",
-        "api_docs": "/docs",
-        "api_endpoints": "/api/",
-        "frontend": "Visit the root URL for the viewer interface"
-    }
+# Note: Root endpoint (/) is handled by Vercel routing to dynamic_viewer.html
+# No need for @app.get("/") here as it would conflict with Vercel's static file serving
