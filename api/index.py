@@ -186,6 +186,15 @@ async def get_data_file(filename: str):
         "timestamp": datetime.now().isoformat()
     }
 
+# Vercel serverless function handler - this is required for Vercel to work
+def handler(request, context):
+    """Vercel serverless function entry point"""
+    from mangum import Mangum
+    
+    # Create Mangum handler for AWS Lambda/Vercel
+    asgi_handler = Mangum(app)
+    return asgi_handler(request, context)
+
 # For local development
 if __name__ == "__main__":
     import uvicorn
