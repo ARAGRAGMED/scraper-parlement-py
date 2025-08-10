@@ -15,10 +15,5 @@
       "src": "/(.*)",
       "dest": "/api/hello.py"
     }
-  ],
-  "functions": {
-    "api/hello.py": {
-      "maxDuration": 10
-    }
-  }
+  ]
 }
