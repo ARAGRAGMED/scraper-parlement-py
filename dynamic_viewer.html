@@ -569,7 +569,7 @@
                 <i class="fas fa-sync-alt"></i> Actualiser les Données
             </button>
             <button id="start-scraping" class="btn btn-primary" style="padding: 10px 15px;">
-                <i class="fas fa-rocket"></i> Démarrer le Scraping
+                <i class="fas fa-sync-alt"></i> Actualiser les Données
             </button>
         </div>
 
@@ -919,33 +919,34 @@
         document.getElementById('start-scraping').addEventListener('click', async function() {
             try {
                 this.disabled = true;
-                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Scraping en cours...';
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Actualisation en cours...';
                 
-                const response = await fetch('/api/scrape', {
+                const response = await fetch('/api/legislation/refresh', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({
-                        force_rescrape: false,
-                        max_pages: null
-                    })
+                    body: JSON.stringify({})
                 });
                 
                 const result = await response.json();
                 
-                if (result.success) {
-                    alert(`Scraping terminé ! ${result.data_count} éléments trouvés.`);
+                if (result.status === 'success') {
+                    alert(`Actualisation terminée ! ${result.data?.total_items || 0} éléments trouvés.`);
                     loadData(); // Refresh the data
+                } else if (result.status === 'limited') {
+                    alert(`Actualisation limitée en environnement serverless: ${result.note}`);
+                    // Still refresh data to show current state
+                    loadData();
                 } else {
-                    alert(`${result.message}`);
+                    alert(`${result.message || result.error || 'Erreur lors de l\'actualisation'}`);
                 }
             } catch (error) {
-                console.error('Erreur de scraping:', error);
-                alert('Le scraping a échoué. Vérifiez la console pour plus de détails.');
+                console.error('Erreur d\'actualisation:', error);
+                alert('L\'actualisation a échoué. Vérifiez la console pour plus de détails.');
             } finally {
                 this.disabled = false;
-                this.innerHTML = '<i class="fas fa-rocket"></i> Démarrer le Scraping';
+                this.innerHTML = '<i class="fas fa-sync-alt"></i> Actualiser les Données';
             }
         });
 
