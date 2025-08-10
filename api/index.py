@@ -48,6 +48,49 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Scraping endpoint
+@api_router.post("/scrape")
+async def scrape_legislation():
+    """Scrape legislation data from Moroccan Parliament website"""
+    try:
+        if not SCRAPER_AVAILABLE:
+            return {
+                "error": "Scraper not available",
+                "message": "Scraping functionality is not available on this platform",
+                "suggestion": "Use existing data from /api/legislation endpoint",
+                "timestamp": datetime.now().isoformat()
+            }
+        
+        # Create scraper instance
+        scraper = MoroccanParliamentScraper()
+        
+        # Run scraper
+        success = scraper.run()
+        
+        if success:
+            return {
+                "message": "Legislation scraping completed successfully",
+                "status": "success",
+                "timestamp": datetime.now().isoformat(),
+                "data": {
+                    "total_items": len(scraper.results) if hasattr(scraper, 'results') else 0,
+                    "scraped_at": datetime.now().isoformat()
+                }
+            }
+        else:
+            return {
+                "message": "Legislation scraping failed",
+                "status": "error",
+                "timestamp": datetime.now().isoformat()
+            }
+            
+    except Exception as e:
+        return {
+            "error": "Failed to scrape legislation data",
+            "message": str(e),
+            "timestamp": datetime.now().isoformat()
+        }
+
 # Root endpoint for the main page (serves dynamic_viewer.html content)
 @app.get("/")
 async def main_page():
@@ -1229,6 +1272,12 @@ async def get_api_status():
         "version": "1.0.0",
         "timestamp": datetime.now().isoformat(),
         "endpoints": [
+            {
+                "path": "/api/scrape",
+                "method": "POST",
+                "description": "Scrape legislation data from source",
+                "status": "active"
+            },
             {
                 "path": "/api/legislation",
                 "method": "GET",
