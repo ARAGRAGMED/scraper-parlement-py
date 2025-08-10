@@ -39,9 +39,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount static files (conditional for cloud deployment)
-if os.path.exists("."):
-    app.mount("/static", StaticFiles(directory="."), name="static")
+# Mount static files
+app.mount("/static", StaticFiles(directory="."), name="static")
 
 # Pydantic models
 class ScrapingRequest(BaseModel):
@@ -75,11 +74,10 @@ scraper_instance: Optional[MoroccanParliamentScraper] = None
 async def root():
     """Serve the main web viewer"""
     try:
-        # Try multiple possible paths for cloud deployment
+        # Try to load the HTML file
         html_paths = [
             "dynamic_viewer.html",
-            "./dynamic_viewer.html",
-            "/app/dynamic_viewer.html"
+            "./dynamic_viewer.html"
         ]
         
         for html_path in html_paths:
@@ -124,12 +122,11 @@ async def health_check():
 async def get_legislation():
     """Get all legislation data"""
     try:
-        # Try multiple possible data file paths for cloud deployment
+        # Try to load data file
         current_year = datetime.now().year
         data_paths = [
             f"data/extracted-data-{current_year}.json",
-            f"./data/extracted-data-{current_year}.json",
-            f"/app/data/extracted-data-{current_year}.json"
+            f"./data/extracted-data-{current_year}.json"
         ]
         
         data_file = None
@@ -158,12 +155,11 @@ async def get_legislation():
 async def get_legislation_by_number(law_number: str):
     """Get specific legislation by law number"""
     try:
-        # Try multiple possible data file paths for cloud deployment
+        # Try to load data file
         current_year = datetime.now().year
         data_paths = [
             f"data/extracted-data-{current_year}.json",
-            f"./data/extracted-data-{current_year}.json",
-            f"/app/data/extracted-data-{current_year}.json"
+            f"./data/extracted-data-{current_year}.json"
         ]
         
         data_file = None
@@ -190,12 +186,11 @@ async def get_legislation_by_number(law_number: str):
 async def get_legislation_by_stage(stage: str):
     """Get legislation by stage (Lecture 1, Lecture 2)"""
     try:
-        # Try multiple possible data file paths for cloud deployment
+        # Try to load data file
         current_year = datetime.now().year
         data_paths = [
             f"data/extracted-data-{current_year}.json",
-            f"./data/extracted-data-{current_year}.json",
-            f"/app/data/extracted-data-{current_year}.json"
+            f"./data/extracted-data-{current_year}.json"
         ]
         
         data_file = None
@@ -205,7 +200,7 @@ async def get_legislation_by_stage(stage: str):
                 break
         
         if not data_file:
-            raise HTTPException(status_code=404, detail="No data found. Run scraper first.")
+            raise HTTPException(status_code=500, detail="No data found. Run scraper first.")
         
         with open(data_file, 'r', encoding='utf-8') as f:
             data = json.load(f)
@@ -242,8 +237,7 @@ async def start_scraping(request: ScrapingRequest, background_tasks: BackgroundT
             current_year = datetime.now().year
             data_paths = [
                 f"data/extracted-data-{current_year}.json",
-                f"./data/extracted-data-{current_year}.json",
-                f"/app/data/extracted-data-{current_year}.json"
+                f"./data/extracted-data-{current_year}.json"
             ]
             
             data_count = 0
@@ -273,12 +267,11 @@ async def start_scraping(request: ScrapingRequest, background_tasks: BackgroundT
 async def get_statistics():
     """Get scraping statistics"""
     try:
-        # Try multiple possible data file paths for cloud deployment
+        # Try to load data file
         current_year = datetime.now().year
         data_paths = [
             f"data/extracted-data-{current_year}.json",
-            f"./data/extracted-data-{current_year}.json",
-            f"/app/data/extracted-data-{current_year}.json"
+            f"./data/extracted-data-{current_year}.json"
         ]
         
         data_file = None
@@ -321,11 +314,10 @@ async def get_statistics():
 @app.get("/api/data/{filename}")
 async def get_data_file(filename: str):
     """Get data files directly"""
-    # Try multiple possible data directory paths for cloud deployment
+    # Try to find data directory
     data_paths = [
         Path("data"),
-        Path("./data"),
-        Path("/app/data")
+        Path("./data")
     ]
     
     file_path = None
