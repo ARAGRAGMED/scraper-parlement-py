@@ -48,48 +48,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Scraping endpoint
-@api_router.post("/scrape")
-async def scrape_legislation():
-    """Scrape legislation data from Moroccan Parliament website"""
-    try:
-        if not SCRAPER_AVAILABLE:
-            return {
-                "error": "Scraper not available",
-                "message": "Scraping functionality is not available on this platform",
-                "suggestion": "Use existing data from /api/legislation endpoint",
-                "timestamp": datetime.now().isoformat()
-            }
-        
-        # Create scraper instance
-        scraper = MoroccanParliamentScraper()
-        
-        # Run scraper
-        success = scraper.run()
-        
-        if success:
-            return {
-                "message": "Legislation scraping completed successfully",
-                "status": "success",
-                "timestamp": datetime.now().isoformat(),
-                "data": {
-                    "total_items": len(scraper.results) if hasattr(scraper, 'results') else 0,
-                    "scraped_at": datetime.now().isoformat()
-                }
-            }
-        else:
-            return {
-                "message": "Legislation scraping failed",
-                "status": "error",
-                "timestamp": datetime.now().isoformat()
-            }
-            
-    except Exception as e:
-        return {
-            "error": "Failed to scrape legislation data",
-            "message": str(e),
-            "timestamp": datetime.now().isoformat()
-        }
+
 
 # Root endpoint for the main page (serves dynamic_viewer.html content)
 @app.get("/")
@@ -1249,17 +1208,63 @@ async def refresh_legislation_data():
                 "timestamp": datetime.now().isoformat()
             }
         
-        # In production, this would trigger a background scraping task
-        return {
-            "message": "Legislation refresh initiated",
-            "status": "processing",
-            "note": "Data refresh is limited on serverless platforms",
-            "timestamp": datetime.now().isoformat()
-        }
+        # Check if we're in a serverless environment
+        import os
+        is_vercel = os.environ.get('VERCEL') == '1'
+        
+        if is_vercel:
+            return {
+                "message": "Legislation refresh initiated in serverless environment",
+                "status": "limited",
+                "note": "Full data refresh is limited on Vercel serverless platform due to timeout and resource constraints",
+                "recommendation": "Use local development environment for full scraping functionality",
+                "timestamp": datetime.now().isoformat(),
+                "environment": "vercel_serverless",
+                "limitations": [
+                    "10 second timeout limit",
+                    "1024 MB memory limit", 
+                    "Read-only file system",
+                    "Limited network requests"
+                ]
+            }
+        
+        # For non-serverless environments, attempt actual scraping
+        try:
+            scraper = MoroccanParliamentScraper()
+            success = scraper.run(max_pages=5)  # Limit pages for safety
+            
+            if success:
+                return {
+                    "message": "Legislation refresh completed successfully",
+                    "status": "success",
+                    "timestamp": datetime.now().isoformat(),
+                    "data": {
+                        "total_items": len(scraper.results) if hasattr(scraper, 'results') else 0,
+                        "scraped_at": datetime.now().isoformat()
+                    }
+                }
+            else:
+                return {
+                    "message": "Legislation refresh failed",
+                    "status": "error",
+                    "timestamp": datetime.now().isoformat(),
+                    "note": "Scraper execution failed - check logs for details"
+                }
+                
+        except Exception as scraper_error:
+            return {
+                "error": "Scraper execution error",
+                "message": str(scraper_error),
+                "error_type": type(scraper_error).__name__,
+                "timestamp": datetime.now().isoformat(),
+                "note": "Error occurred during scraper execution"
+            }
+            
     except Exception as e:
         return {
             "error": "Failed to refresh legislation data",
             "message": str(e),
+            "error_type": type(e).__name__,
             "timestamp": datetime.now().isoformat()
         }
 
@@ -1272,12 +1277,6 @@ async def get_api_status():
         "version": "1.0.0",
         "timestamp": datetime.now().isoformat(),
         "endpoints": [
-            {
-                "path": "/api/scrape",
-                "method": "POST",
-                "description": "Scrape legislation data from source",
-                "status": "active"
-            },
             {
                 "path": "/api/legislation",
                 "method": "GET",
