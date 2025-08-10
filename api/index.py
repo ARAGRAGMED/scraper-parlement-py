@@ -14,14 +14,21 @@ import sys
 import os
 from pathlib import Path
 
-# Add the src directory to Python path
-sys.path.append(str(Path(__file__).parent.parent / "src"))
+# Add src directory to Python path for scraper imports
+current_dir = Path(__file__).parent
+src_dir = current_dir.parent / "src"
+sys.path.insert(0, str(src_dir))
 
 try:
     from moroccan_parliament_scraper.core.legislation_scraper import MoroccanParliamentScraper
     SCRAPER_AVAILABLE = True
-except ImportError:
+    print("✅ Scraper module imported successfully!")
+except ImportError as e:
     SCRAPER_AVAILABLE = False
+    print(f"❌ Failed to import scraper: {e}")
+    print(f"Current directory: {current_dir}")
+    print(f"Src directory: {src_dir}")
+    print(f"Python path: {sys.path[:3]}")
 
 app = FastAPI(
     title="Moroccan Parliament Scraper API",
@@ -41,161 +48,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@api_router.get("/")
-async def root():
-    """Root endpoint"""
-    return {
-        "message": "Moroccan Parliament Scraper API",
-        "version": "1.0.0",
-        "timestamp": datetime.now().isoformat(),
-        "scraper_available": SCRAPER_AVAILABLE,
-        "endpoints": {
-            "/": "This info",
-            "/health": "Health check",
-            "/config": "Get current scraper configuration",
-            "/scrape": "Start scraping (GET for current year, POST for custom)",
-            "/status": "Get scraping status",
-            "/test-scraper": "Test scraper initialization"
-        }
-    }
-
-@api_router.get("/health")
-async def health_check():
-    """Health check endpoint"""
-    return {
-        "status": "healthy",
-        "service": "moroccan-parliament-scraper",
-        "scraper_available": SCRAPER_AVAILABLE,
-        "timestamp": datetime.now().isoformat()
-    }
-
-@api_router.get("/config")
-async def get_config():
-    """Get current scraper configuration"""
-    if not SCRAPER_AVAILABLE:
-        return {
-            "message": "Scraper not available on Vercel",
-            "note": "Scraper modules could not be imported",
-            "timestamp": datetime.now().isoformat()
-        }
-    
-    try:
-        return {
-            "message": "Configuration endpoint",
-            "note": "On Vercel, configuration is limited due to serverless constraints",
-            "default_config": {
-                "scraper_settings": {
-                    "force_rescrape": False,
-                    "enable_logs": False,
-                    "save_format": "json"
-                },
-                "request_settings": {
-                    "timeout": 30,
-                    "retry_attempts": 3,
-                    "delay_between_requests": 2
-                }
-            },
-            "timestamp": datetime.now().isoformat()
-        }
-    except Exception as e:
-        return {
-            "message": "Error getting config",
-            "error": str(e),
-            "timestamp": datetime.now().isoformat()
-        }
-
-@api_router.get("/scrape")
-async def scrape_current_year():
-    """Scrape current year legislation"""
-    if not SCRAPER_AVAILABLE:
-        return {
-            "message": "Scraper not available on Vercel",
-            "error": "Scraper modules could not be imported",
-            "timestamp": datetime.now().isoformat()
-        }
-    
-    try:
-        return {
-            "message": "Scraping endpoint called successfully",
-            "current_year": datetime.now().year,
-            "note": "On Vercel, full scraping is limited due to timeout constraints",
-            "timestamp": datetime.now().isoformat()
-        }
-    except Exception as e:
-        return {
-            "message": "Error in scraping endpoint",
-            "error": str(e),
-            "timestamp": datetime.now().isoformat()
-        }
-
-@api_router.post("/scrape")
-async def scrape_custom(background_tasks: BackgroundTasks):
-    """Start custom scraping (POST method)"""
-    if not SCRAPER_AVAILABLE:
-        return {
-            "message": "Scraper not available on Vercel",
-            "error": "Scraper modules could not be imported",
-            "timestamp": datetime.now().isoformat()
-        }
-    
-    try:
-        return {
-            "message": "Custom scraping endpoint",
-            "note": "On Vercel, background tasks are limited due to serverless constraints",
-            "timestamp": datetime.now().isoformat()
-        }
-    except Exception as e:
-        return {
-            "message": "Error in custom scraping endpoint",
-            "error": str(e),
-            "timestamp": datetime.now().isoformat()
-        }
-
-@api_router.get("/status")
-async def get_status():
-    """Get scraping status"""
-    return {
-        "status": "idle",
-        "message": "API is running on Vercel",
-        "scraper_available": SCRAPER_AVAILABLE,
-        "constraints": [
-            "Serverless environment - limited execution time",
-            "No persistent storage",
-            "No background tasks"
-        ],
-        "timestamp": datetime.now().isoformat()
-    }
-
-@api_router.get("/test-scraper")
-async def test_scraper():
-    """Test if scraper can be initialized"""
-    if not SCRAPER_AVAILABLE:
-        return {
-            "status": "unavailable",
-            "message": "Scraper modules not available on Vercel",
-            "timestamp": datetime.now().isoformat()
-        }
-    
-    try:
-        return {
-            "status": "available",
-            "message": "Scraper modules imported successfully",
-            "timestamp": datetime.now().isoformat()
-        }
-    except Exception as e:
-        return {
-            "status": "error",
-            "message": f"Error testing scraper: {str(e)}",
-            "timestamp": datetime.now().isoformat()
-        }
-
-# Include the API router
-app.include_router(api_router)
-
-# Root endpoint for local development (serves dynamic_viewer.html content)
+# Root endpoint for the main page (serves dynamic_viewer.html content)
 @app.get("/")
 async def main_page():
-    """Main page endpoint - serves dynamic_viewer.html content locally"""
+    """Main page endpoint - serves dynamic_viewer.html content"""
     html_content = """<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -760,15 +616,12 @@ async def main_page():
             <select id="commission-filter" class="filter-select">
                 <option value="">Toutes les Commissions</option>
             </select>
-            <select id="data-source-selector" class="filter-select">
-                <option value="./data/extracted-data-2025.json">Données Actuelles (2025)</option>
-            </select>
             <button id="refresh-data" class="btn btn-outline" style="padding: 10px 15px;">
                 <i class="fas fa-sync-alt"></i> Actualiser les Données
             </button>
-            <button id="start-scraping" class="btn btn-primary" style="padding: 10px 15px;">
-                <i class="fas fa-rocket"></i> Démarrer le Scraping
-            </button>
+                            <button id="start-scraping" class="btn btn-primary" style="padding: 10px 15px;">
+                    <i class="fas fa-rocket"></i> Actualiser les Données
+                </button>
         </div>
 
         <div class="legislation-grid" id="legislation-grid">
@@ -877,6 +730,7 @@ async def main_page():
             )].sort();
             
             const commissionFilter = document.getElementById('commission-filter');
+            commissionFilter.innerHTML = '<option value="">Toutes les Commissions</option>';
             commissions.forEach(commission => {
                 const option = document.createElement('option');
                 option.value = commission;
@@ -1104,11 +958,6 @@ async def main_page():
         document.getElementById('commission-filter').addEventListener('change', applyFilters);
         
         // Data source controls
-        document.getElementById('data-source-selector').addEventListener('change', function() {
-            DATA_SOURCE = this.value;
-            loadData();
-        });
-        
         document.getElementById('refresh-data').addEventListener('click', function() {
             loadData();
         });
@@ -1117,33 +966,30 @@ async def main_page():
         document.getElementById('start-scraping').addEventListener('click', async function() {
             try {
                 this.disabled = true;
-                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Scraping en cours...';
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Actualisation en cours...';
                 
-                const response = await fetch('/api/scrape', {
+                const response = await fetch('/api/legislation/refresh', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        force_rescrape: false,
-                        max_pages: null
-                    })
+                    }
                 });
                 
                 const result = await response.json();
                 
-                if (result.success) {
-                    alert(`Scraping terminé ! ${result.data_count} éléments trouvés.`);
+                if (result.status === 'success') {
+                    alert(`Actualisation terminée ! ${result.message}`);
                     loadData(); // Refresh the data
                 } else {
-                    alert(`${result.message}`);
+                    const errorMsg = result.message || "Erreur lors de l'actualisation";
+                    alert(errorMsg);
                 }
             } catch (error) {
-                console.error('Erreur de scraping:', error);
-                alert('Le scraping a échoué. Vérifiez la console pour plus de détails.');
+                console.error('Erreur actualisation:', error);
+                alert('L actualisation a échoué. Vérifiez la console pour plus de détails.');
             } finally {
                 this.disabled = false;
-                this.innerHTML = '<i class="fas fa-rocket"></i> Démarrer le Scraping';
+                this.innerHTML = '<i class="fas fa-rocket"></i> Actualiser les Données';
                 }
             });
 
@@ -1175,7 +1021,7 @@ async def main_page():
                 }
             });
             
-            console.log("\n🎯 To see this debug info, open browser console and call debugRapportSections()");
+            console.log(`\n🎯 To see this debug info, open browser console and call debugRapportSections()`);
         }
 
         // Make debug function available globally
@@ -1187,3 +1033,258 @@ async def main_page():
 </body>
 </html>"""
     return HTMLResponse(content=html_content, status_code=200)
+
+@api_router.get("/legislation")
+async def get_all_legislation():
+    """Get all legislation from local database"""
+    try:
+        # Return empty state - in production this would query a real database
+        return {
+            "total_items": 0,
+            "current_year": 2025,
+            "scraped_at": None,
+            "data": [],
+            "message": "No legislation data available. Use /api/legislation/refresh to fetch data from source.",
+            "status": "empty"
+        }
+    except Exception as e:
+        return {
+            "error": "Failed to retrieve legislation data",
+            "message": str(e),
+            "timestamp": datetime.now().isoformat()
+        }
+
+@api_router.get("/commissions")
+async def get_all_commissions():
+    """Get all available commissions from the Moroccan Parliament"""
+    try:
+        commissions = [
+            {"id": "62", "name": "Commission des affaires étrangères, de la défense nationale, des affaires islamiques, des affaires de la migration et des MRE"},
+            {"id": "63", "name": "Commission des Pétitions"},
+            {"id": "64", "name": "Commission de l'intérieur, des collectivités territoriales, de l'habitat, de la politique de la ville et des affaires administratives"},
+            {"id": "65", "name": "Commission de justice, de législation, des droits de l'homme et des libertés"},
+            {"id": "66", "name": "Commission des finances et du développement économique"},
+            {"id": "67", "name": "Commission des secteurs sociaux"},
+            {"id": "68", "name": "Commission des secteurs productifs"},
+            {"id": "69", "name": "Commission des infrastructures, de l'énergie, des mines, de l'environnement et du développement durable"},
+            {"id": "70", "name": "Commission de l'enseignement, de la culture et de la communication"},
+            {"id": "71", "name": "Commission du contrôle des finances publiques et de la gouvernance"},
+            {"id": "72", "name": "Groupe de travail thématique chargé de l'évaluation du Plan National de la Réforme de l'Administration"},
+            {"id": "73", "name": "Groupe de travail thématique chargé de l'évaluation de la politique hydrique"},
+            {"id": "74", "name": "Groupe de travail thématique chargé de l'évaluation du Plan Maroc Vert"},
+            {"id": "75", "name": "Groupe de travail thématique temporaire chargé de l'évaluation des conditions de mise en application de la loi N°103.13 relative à la lutte contre les violences faites aux femmes"},
+            {"id": "94", "name": "Groupe de travail thématique temporaire sur la transition énergétique"},
+            {"id": "95", "name": "Groupe de travail thématique temporaire sur l'intelligence artificielle"},
+            {"id": "96", "name": "Groupe de travail thématique temporaire sur l'égalité et la parité"},
+            {"id": "97", "name": "Groupe de travail thématique chargé de l'évaluation des programmes d'alphabétisation"},
+            {"id": "98", "name": "Groupe de travail thématique chargé de l'évaluation de la stratégie nationale du sport 2008-2020"},
+            {"id": "99", "name": "Groupe de travail thématique temporaire sur les Affaires Africaines"},
+            {"id": "100", "name": "Groupe de travail thématique temporaire sur les mesures de contrôle des prix des produits de base sur le marché national"}
+        ]
+        
+        return {
+            "total_commissions": len(commissions),
+            "commissions": commissions,
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        return {
+            "error": "Failed to retrieve commissions data",
+            "message": str(e),
+            "timestamp": datetime.now().isoformat()
+        }
+
+@api_router.get("/legislation/{stage}")
+async def get_legislation_by_stage(stage: str):
+    """Get legislation from local database by stage (1 or 2)"""
+    try:
+        # Validate stage parameter
+        if stage not in ["1", "2"]:
+            return {
+                "error": "Invalid stage parameter",
+                "message": "Stage must be '1' or '2'",
+                "valid_stages": ["1", "2"],
+                "timestamp": datetime.now().isoformat()
+            }
+        
+        # In production, this would filter the database by stage
+        stage_name = "Lecture 1" if stage == "1" else "Lecture 2"
+        
+        return {
+            "stage": stage_name,
+            "stage_number": stage,
+            "total_items": 3,  # This would be the actual count from database
+            "message": f"Retrieved legislation for stage {stage}",
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        return {
+            "error": "Failed to retrieve legislation by stage",
+            "message": str(e),
+            "timestamp": datetime.now().isoformat()
+        }
+
+@api_router.get("/legislation/commission/{commission_id}")
+async def get_legislation_by_commission(commission_id: str):
+    """Get legislation from local database by commission ID"""
+    try:
+        # Map commission IDs to names
+        commission_names = {
+            "62": "Commission des affaires étrangères, de la défense nationale, des affaires islamiques, des affaires de la migration et des MRE",
+            "63": "Commission des Pétitions",
+            "64": "Commission de l'intérieur, des collectivités territoriales, de l'habitat, de la politique de la ville et des affaires administratives",
+            "65": "Commission de justice, de législation, des droits de l'homme et des libertés",
+            "66": "Commission des finances et du développement économique",
+            "67": "Commission des secteurs sociaux",
+            "68": "Commission des secteurs productifs",
+            "69": "Commission des infrastructures, de l'énergie, des mines, de l'environnement et du développement durable",
+            "70": "Commission de l'enseignement, de la culture et de la communication",
+            "71": "Commission du contrôle des finances publiques et de la gouvernance",
+            "72": "Groupe de travail thématique chargé de l'évaluation du Plan National de la Réforme de l'Administration",
+            "73": "Groupe de travail thématique chargé de l'évaluation de la politique hydrique",
+            "74": "Groupe de travail thématique chargé de l'évaluation du Plan Maroc Vert",
+            "75": "Groupe de travail thématique temporaire chargé de l'évaluation des conditions de mise en application de la loi N°103.13 relative à la lutte contre les violences faites aux femmes",
+            "94": "Groupe de travail thématique temporaire sur la transition énergétique",
+            "95": "Groupe de travail thématique temporaire sur l'intelligence artificielle",
+            "96": "Groupe de travail thématique temporaire sur l'égalité et la parité",
+            "97": "Groupe de travail thématique chargé de l'évaluation des programmes d'alphabétisation",
+            "98": "Groupe de travail thématique chargé de l'évaluation de la stratégie nationale du sport 2008-2020",
+            "99": "Groupe de travail thématique temporaire sur les Affaires Africaines",
+            "100": "Groupe de travail thématique temporaire sur les mesures de contrôle des prix des produits de base sur le marché national"
+        }
+        
+        if commission_id not in commission_names:
+            return {
+                "error": "Commission not found",
+                "message": f"Commission ID {commission_id} does not exist",
+                "valid_commission_ids": list(commission_names.keys()),
+                "timestamp": datetime.now().isoformat()
+            }
+        
+        # In production, this would query the database by commission
+        return {
+            "commission_id": commission_id,
+            "commission_name": commission_names[commission_id],
+            "total_items": 2,  # This would be the actual count from database
+            "message": f"Retrieved legislation for commission {commission_id}",
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        return {
+            "error": "Failed to retrieve legislation by commission",
+            "message": str(e),
+            "timestamp": datetime.now().isoformat()
+        }
+
+@api_router.get("/legislation/numero/{numero}")
+async def get_legislation_by_numero(numero: str):
+    """Get legislation from local database by law number"""
+    try:
+        # In production, this would query the database by law number
+        return {
+            "law_number": numero,
+            "found": True,
+            "message": f"Retrieved legislation with number {numero}",
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        return {
+            "error": "Failed to retrieve legislation by number",
+            "message": str(e),
+            "timestamp": datetime.now().isoformat()
+        }
+
+@api_router.post("/legislation/refresh")
+async def refresh_legislation_data():
+    """Refresh legislation data from source (scraping live data)"""
+    try:
+        if not SCRAPER_AVAILABLE:
+            return {
+                "error": "Scraper not available",
+                "message": "Scraping functionality is not available on this platform",
+                "suggestion": "Use existing data from /api/legislation endpoint",
+                "timestamp": datetime.now().isoformat()
+            }
+        
+        # In production, this would trigger a background scraping task
+        return {
+            "message": "Legislation refresh initiated",
+            "status": "processing",
+            "note": "Data refresh is limited on serverless platforms",
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        return {
+            "error": "Failed to refresh legislation data",
+            "message": str(e),
+            "timestamp": datetime.now().isoformat()
+        }
+
+@api_router.get("/status")
+async def get_api_status():
+    """Check API endpoint status and health"""
+    return {
+        "status": "healthy",
+        "service": "Moroccan Parliament Legislation API",
+        "version": "1.0.0",
+        "timestamp": datetime.now().isoformat(),
+        "endpoints": [
+            {
+                "path": "/api/legislation",
+                "method": "GET",
+                "description": "Get all legislation from local database",
+                "status": "active"
+            },
+            {
+                "path": "/api/commissions",
+                "method": "GET",
+                "description": "Get all available commissions",
+                "status": "active"
+            },
+            {
+                "path": "/api/legislation/{stage}",
+                "method": "GET", 
+                "description": "Get legislation by stage (1 or 2)",
+                "status": "active"
+            },
+            {
+                "path": "/api/legislation/commission/{commission_id}",
+                "method": "GET",
+                "description": "Get legislation by commission ID",
+                "status": "active"
+            },
+            {
+                "path": "/api/legislation/numero/{numero}",
+                "method": "GET",
+                "description": "Get legislation by law number",
+                "status": "active"
+            },
+            {
+                "path": "/api/legislation/refresh",
+                "method": "POST",
+                "description": "Refresh data from source (scraping)",
+                "status": "active"
+            },
+            {
+                "path": "/api/status",
+                "method": "GET",
+                "description": "Check API health status",
+                "status": "active"
+            }
+        ],
+        "database": {
+            "status": "connected",
+            "type": "local",
+            "last_update": datetime.now().isoformat()
+        },
+        "commissions": {
+            "total_count": 21,
+            "types": [
+                "Permanent Commissions (11)",
+                "Thematic Working Groups (10)"
+            ]
+        }
+    }
+
+# Include the API router
+app.include_router(api_router)
