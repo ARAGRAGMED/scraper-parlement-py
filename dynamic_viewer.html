@@ -934,8 +934,11 @@
                 if (result.status === 'success') {
                     alert(`Actualisation terminée ! ${result.data?.total_items || 0} éléments trouvés.`);
                     loadData(); // Refresh the data
-                } else if (result.status === 'limited') {
-                    alert(`Actualisation limitée en environnement serverless: ${result.note}`);
+                } else if (result.status === 'limited_success') {
+                    alert(`Actualisation limitée réussie ! ${result.data?.total_items || 0} éléments trouvés.\n\n${result.note}\n\nLes données existantes restent disponibles.`);
+                    loadData(); // Refresh the data
+                } else if (result.status === 'limited_failed' || result.status === 'limited_error') {
+                    alert(`Actualisation limitée échouée en environnement serverless: ${result.note}`);
                     // Still refresh data to show current state
                     loadData();
                 } else {

@@ -1213,20 +1213,50 @@ async def refresh_legislation_data():
         is_vercel = os.environ.get('VERCEL') == '1'
         
         if is_vercel:
-            return {
-                "message": "Legislation refresh initiated in serverless environment",
-                "status": "limited",
-                "note": "Full data refresh is limited on Vercel serverless platform due to timeout and resource constraints",
-                "recommendation": "Use local development environment for full scraping functionality",
-                "timestamp": datetime.now().isoformat(),
-                "environment": "vercel_serverless",
-                "limitations": [
-                    "10 second timeout limit",
-                    "1024 MB memory limit", 
-                    "Read-only file system",
-                    "Limited network requests"
-                ]
-            }
+            # In serverless, try a very limited refresh (just 1-2 pages)
+            try:
+                scraper = MoroccanParliamentScraper()
+                # Very conservative limits for serverless
+                success = scraper.run(max_pages=2)
+                
+                if success:
+                    return {
+                        "message": "Limited legislation refresh completed in serverless environment",
+                        "status": "limited_success",
+                        "timestamp": datetime.now().isoformat(),
+                        "data": {
+                            "total_items": len(scraper.results) if hasattr(scraper, 'results') else 0,
+                            "scraped_at": datetime.now().isoformat()
+                        },
+                        "note": "Limited refresh completed within serverless constraints. Current data remains available.",
+                        "environment": "vercel_serverless",
+                        "limitations": [
+                            "Limited to 2 pages maximum",
+                            "60 second timeout limit",
+                            "1024 MB memory limit"
+                        ],
+                        "recommendation": "For full refresh, use local development environment or existing data is still accessible"
+                    }
+                else:
+                    return {
+                        "message": "Limited legislation refresh failed in serverless environment",
+                        "status": "limited_failed",
+                        "timestamp": datetime.now().isoformat(),
+                        "note": "Limited refresh failed - serverless constraints too restrictive",
+                        "environment": "vercel_serverless",
+                        "recommendation": "Use local development environment for full scraping functionality"
+                    }
+                    
+            except Exception as serverless_error:
+                return {
+                    "message": "Limited legislation refresh error in serverless environment",
+                    "status": "limited_error",
+                    "timestamp": datetime.now().isoformat(),
+                    "note": "Serverless environment too restrictive for scraping",
+                    "environment": "vercel_serverless",
+                    "error": str(serverless_error),
+                    "recommendation": "Use local development environment for full scraping functionality"
+                }
         
         # For non-serverless environments, attempt actual scraping
         try:
