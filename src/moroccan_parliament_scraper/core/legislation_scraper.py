@@ -612,9 +612,25 @@ class MoroccanParliamentScraper:
             self.print_summary()
             return True
         else:
-            # No results and scraping didn't fail - this shouldn't happen
-            self._log("❌ No results found. Exiting.", "progress")
-            return False
+            # No new results but scraping was successful - check if we have existing data
+            if os.path.exists(data_file):
+                self._log("\n✅ Scraping completed successfully!", "progress")
+                self._log("📋 No new legislation items found, but existing data is available.", "progress")
+                # Load existing data to show summary
+                try:
+                    with open(data_file, 'r', encoding='utf-8') as f:
+                        existing_data = json.load(f)
+                        self.results = existing_data.get('data', [])
+                        self._log(f"📊 Loaded {len(self.results)} existing legislation items", "progress")
+                        self.print_summary()
+                        return True
+                except Exception as e:
+                    self._log(f"❌ Error loading existing data: {e}", "progress")
+                    return False
+            else:
+                # No results and no existing data file
+                self._log("❌ No legislation items found and no existing data available. Exiting.", "progress")
+                return False
     
     def extract_legislation_page_details(self, url, listing_title=''):
         """Extract detailed information from a legislation page"""

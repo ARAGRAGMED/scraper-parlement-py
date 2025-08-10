@@ -1,6 +1,6 @@
 {
   "scraper_settings": {
-    "force_rescrape": false,
+    "force_rescrape": true,
     "enable_logs": true,
     "save_format": "json"
   },

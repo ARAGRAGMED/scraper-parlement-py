@@ -1,480 +1,285 @@
-# 🏛️ Moroccan Parliament Legislation Scraper
+# 🇲🇦 Moroccan Parliament Legislation API
 
-A comprehensive, configurable web scraper for extracting current year legislation data from the Moroccan Parliament website with precise source identification for both commissions and ministries.
+A modern, modular FastAPI application for scraping and serving Moroccan Parliament legislation data with a clean, maintainable architecture.
 
-## ✨ Features
+## 🏗️ **Architecture Overview**
 
-- **📋 Current Year Focus**: Automatically identifies and scrapes current legislative year data
-- **🎯 Source Identification**: Precisely identifies commission and ministry sources for each legislation
-- **🔄 Duplicate Prevention**: Intelligent duplicate checking to avoid re-scraping existing data
-- **⚙️ Configuration System**: Flexible configuration management with JSON-based settings
-- **🌐 Proxy Support**: Built-in proxy rotation and management
-- **📝 Granular Logging**: Configurable logging levels and types
-- **🛡️ Error Handling**: Robust error handling with retry mechanisms
-- **📊 Structured Data**: Comprehensive data extraction with legislative process details
-- **🎭 Lecture Stage Detection**: Automatic detection and handling of Lecture 1 vs Lecture 2 items
-- **📄 PDF Link Extraction**: Extracts PDF links without downloading files
-- **📋 Rapport Section**: Enhanced extraction of rapport sections for Lecture 2 items with improved HTML parsing
-- **🎨 Dynamic Web Viewer**: Interactive, responsive web interface with real-time data loading
-- **📄 Enhanced PDF Visibility**: Prominent, contextual PDF download buttons with visual indicators
-- **📦 Package Structure**: Professional Python package organization
-- **🚀 Multiple Entry Points**: Flexible execution options
+The API has been refactored from a monolithic structure into a well-organized, maintainable modular architecture:
 
-## 🚀 Quick Start
+```
+api/
+├── main.py              # Main FastAPI application entry point
+├── index.py             # Backward compatibility entry point
+├── routes/              # API endpoint definitions
+│   ├── legislation.py   # Legislation data endpoints
+│   ├── commissions.py   # Commission information endpoints
+│   ├── scraping.py      # Data refresh/scraping endpoints
+│   └── status.py        # API health and documentation endpoints
+├── services/            # Business logic layer
+│   ├── data_service.py  # Data retrieval and filtering
+│   └── scraping_service.py # Web scraping operations
+├── models/              # Data models and validation
+│   └── requests.py      # Request/response models
+├── middleware/          # Authentication and middleware
+│   └── auth.py         # API key authentication
+├── utils/               # Utility functions
+│   └── helpers.py      # Helper functions
+└── static/              # Frontend assets
+    └── index.html       # Interactive web interface
+```
 
-### Method 1: Using the Package Entry Point
+## 🚀 **Quick Start**
 
+### **Prerequisites**
+- Python 3.8+
+- pip package manager
+
+### **Installation**
 ```bash
-# Run from project root
-python3 run_scraper.py
+# Clone the repository
+git clone <your-repo-url>
+cd scrap-parlement
+
+# Install dependencies
+pip install -r requirements.txt
 ```
 
-### Method 2: Using Python Module
-
+### **Running the API**
 ```bash
-# Run as a module
-python3 -m src.moroccan_parliament_scraper
-```
-
-### Method 3: Using Console Script (after installation)
-
-```bash
-# Install the package
-pip install -e .
-
-# Run using console script
-moroccan-scraper
-```
-
-### Method 4: Programmatic Usage
-
-```python
-from src.moroccan_parliament_scraper import MoroccanParliamentScraper
-
-# Create scraper instance (uses config settings)
-scraper = MoroccanParliamentScraper()
-
-# Run the scraper
-success = scraper.run()
-```
-
-## ⚙️ Configuration System
-
-The scraper uses a comprehensive configuration system managed through `config/scraper_config.json`:
-
-### 📋 Configuration Structure
-
-```json
-{
-  "scraper_settings": {
-    "force_rescrape": false,
-    "enable_logs": true,
-    "save_format": "json"
-  },
-  "proxy_settings": {
-    "enable_proxies": false,
-    "proxies": [
-      {
-        "http": "http://proxy1.example.com:8080",
-        "https": "http://proxy1.example.com:8080"
-      }
-    ],
-    "proxy_rotation": true,
-    "proxy_timeout": 10  # Timeout for proxy requests (seconds)
-  },
-  "request_settings": {
-    "timeout": 30,
-    "retry_attempts": 3,
-    "delay_between_requests": 2,
-    "user_agent": "Mozilla/5.0..."
-  },
-      "logging_settings": {
-      "log_level": "INFO",  # DEBUG, INFO, WARNING, ERROR, CRITICAL
-      "show_progress": true,
-      "show_detailed_extraction": true,
-      "show_commission_checks": true,
-      "show_ministry_checks": true
-    }
-}
-```
-
-### 🔧 Configuration Management
-
-```python
-from src.moroccan_parliament_scraper import ConfigManager
-
-# Load configuration
-config = ConfigManager()
-
-# Update settings
-config.set_force_rescrape(True)
-config.enable_proxies(True)
-config.set('logging_settings.show_detailed_extraction', False)
-
-# View current configuration
-config.print_config_summary()
-```
-
-### 🌐 Proxy Configuration
-
-```python
-# Add custom proxies
-proxies = [
-    {"http": "http://proxy1.company.com:8080", "https": "http://proxy1.company.com:8080"},
-    {"http": "http://proxy2.company.com:8080", "https": "http://proxy2.company.com:8080"}
-]
-config.update_proxies(proxies)
-config.enable_proxies(True)
-```
-
-### 📝 Logging Configuration
-
-```python
-# Disable specific log types
-config.set('logging_settings.show_commission_checks', False)
-config.set('logging_settings.show_ministry_checks', False)
-
-# Disable all logs
-config.enable_logs(False)
-```
-
-## 📊 Data Structure
-
-### Main Legislation Record
-
-```json
-{
-  "title": "Projet de loi N°03.25 relatif aux Organismes de Placement Collectif en Valeurs Mobilières",
-  "law_number": "03.25",
-  "url": "https://www.chambredesrepresentants.ma/fr/...",
-  "stage": "Lecture 2",
-  "commission": "Commission des finances et du développement économique",
-  "commission_id": "64",
-  "ministry": "To be identified",
-  "ministry_id": "To be identified",
-  "pdf_url": "https://www.chambredesrepresentants.ma/sites/default/files/...",
-  "pdf_filename": "projet_loi_03_25.pdf",
-  "scraped_at": "2025-01-15T10:30:00",
-  "page": 1,
-  "premiere_lecture": {
-    "bureau_de_la_chambre": {
-      "texte_source": "Gouvernement",
-      "date_depot": "Lundi 7 juillet 2025",
-      "texte_depose": "Le texte tel qu'il a été déposé au Bureau de la Chambre",
-      "pdf_link": "https://..."
-    },
-    "commission": {
-      "commission_name": "Commission des finances et du développement économique",
-      "submission_date": "Mercredi 16 avril 2025"
-    }
-  },
-  "deuxieme_lecture": {
-    "transfer_date": "Mercredi 23 juillet 2025",
-    "commission": {
-      "commission_name": "Commission des finances et du développement économique",
-      "submission_date": "Vendredi 25 juillet 2025"
-    },
-    "rapport_section": {
-      "section_title": "Rapport de la commission permanente - première lecture",
-      "files": [
-        {
-          "title": "Rapport de la commission",
-          "pdf_url": "https://...",
-          "filename": "rapport_commission.pdf",
-          "size": "2.5 MB"
-        }
-      ]
-    }
-  }
-}
-```
-
-## 🎯 Current Results
-
-- **✅ 100% Success Rate**: Commission extraction working perfectly
-- **✅ 100% Success Rate**: Stage detection (Lecture 1 vs Lecture 2)
-- **✅ Enhanced Data Structure**: Organized by legislative stages
-- **✅ Fixed Rapport Section Extraction**: Improved HTML parsing for H3 tags with section-title class
-- **✅ Dynamic Web Interface**: Real-time data loading with enhanced PDF visibility
-- **✅ Duplicate Prevention**: Intelligent skipping of existing data and duplicate file detection
-- **✅ Force Re-scraping**: Option to override duplicate checking
-- **✅ Organized File Structure**: All data saved in `data/` folder
-- **✅ Contextual PDF Organization**: Download buttons placed exactly where relevant
-
-## 🌐 Dynamic Web Viewer
-
-A beautiful, modern web interface to explore the scraped legislation data with real-time data loading and enhanced user experience:
-
-### 🚀 Quick Start
-```bash
-# Production (Vercel Deployment) - Recommended
-Visit: https://scraper-parlement-py-aicx.vercel.app/
-
-# Local Development
+# Navigate to API directory
 cd api
-uvicorn index:app --reload --host 0.0.0.0 --port 8000
-# Then go to http://localhost:8000/
+
+# Start the server
+python3 -m uvicorn main:app --host 0.0.0.0 --port 8000
+
+# Or use the backward-compatible entry point
+python3 -m uvicorn index:app --host 0.0.0.0 --port 8000
 ```
 
-### ✨ Enhanced Features
-- **🔄 Dynamic Data Loading**: Real-time loading from JSON files without page refresh
-- **📊 Live Statistics**: Real-time stats with rapport section counts
-- **🎨 Minimal Modern Design**: Clean, professional interface with subtle visual elements
-- **📄 Prominent PDF Buttons**: Red-highlighted download buttons for maximum visibility
-- **🔍 Advanced Search & Filtering**: By stage, commission, text search with instant results
-- **📋 Contextual PDF Placement**: Download buttons appear exactly where relevant
-- **🏛️ Rapport Section Display**: Enhanced display of commission reports with file listings
-- **🔄 Data Source Control**: Switch between different data files and refresh data
-- **🛠️ Debug Tools**: Built-in browser console debugging for troubleshooting
-- **📱 Fully Responsive**: Perfect mobile and desktop experience
+### **Access the API**
+- **API Documentation**: http://localhost:8000/docs
+- **Interactive Frontend**: http://localhost:8000/
+- **ReDoc Documentation**: http://localhost:8000/redoc
 
-### 📊 Key Improvements
-- **Dynamic Loading**: No more embedded data - loads from JSON files dynamically
-- **PDF Visibility**: Bright red PDF buttons that stand out immediately
-- **Contextual Organization**: PDF buttons appear in metadata and stage sections only
-- **Real-time Updates**: Shows rapport section counts and last update time
-- **Enhanced UX**: Smooth animations, hover effects, and visual feedback
+## 📚 **API Endpoints**
 
-See [WEB_VIEWER_README.md](WEB_VIEWER_README.md) for detailed usage instructions.
+### **Public Endpoints**
 
-## 🔧 Technical Features
+#### **GET /** - Home Page
+- Serves the interactive web interface
+- No authentication required
 
-### Configuration Management
-- **JSON-based Configuration**: Easy to modify and version control
-- **Default Fallbacks**: Graceful handling of missing configuration
-- **Runtime Updates**: Change settings without restarting
-- **Validation**: Automatic configuration validation
+#### **GET /api/legislation** - All Legislation
+- Returns all legislation data from local database
+- Response includes total count, current year, and scraped data
 
-### Proxy Support
-- **Multiple Proxy Support**: Rotate through multiple proxy servers
-- **Automatic Rotation**: Switch proxies on failures
-- **Timeout Management**: Configurable proxy timeouts
-- **Fallback Handling**: Graceful fallback to direct connection
+#### **GET /api/commissions** - All Commissions
+- Returns list of all available parliamentary commissions
+- Includes commission IDs and names
 
-### Logging System
-- **Granular Control**: Enable/disable specific log types
-- **Progress Tracking**: Clear progress indicators
-- **Error Reporting**: Detailed error messages
-- **Performance Monitoring**: Request timing and retry information
+#### **GET /api/legislation/{stage}** - Legislation by Stage
+- Filter legislation by stage (1 = Lecture 1, 2 = Lecture 2)
+- Example: `/api/legislation/1` for first reading items
 
-### Request Management
-- **Retry Logic**: Automatic retry on failures
-- **Timeout Control**: Configurable request timeouts
-- **Rate Limiting**: Respectful delays between requests
-- **Session Management**: Persistent connections
+#### **GET /api/legislation/commission/{commission_id}** - Legislation by Commission
+- Filter legislation by specific commission
+- Example: `/api/legislation/commission/65` for justice commission
 
-### Package Structure
-- **Modular Design**: Clean separation of concerns
-- **Multiple Entry Points**: Flexible execution options
-- **Installation Support**: Proper Python package structure
-- **Import Management**: Clean import paths
+#### **GET /api/legislation/numero/{numero}** - Legislation by Law Number
+- Find specific legislation by law number
+- Example: `/api/legislation/numero/123-45`
 
-## 📁 Project Structure
+#### **GET /api/status** - API Health & Documentation
+- Comprehensive API status and endpoint documentation
+- Database connection status and configuration info
 
-```
-moroccan-parliament-scraper/
-├── 📁 config/
-│   └── scraper_config.json          # Configuration file
-├── 📁 data/
-│   └── extracted-data-2025.json     # Extracted data (organized)
-├── 📁 src/
-│   └── moroccan_parliament_scraper/
-│       ├── __init__.py              # Package initialization
-│       ├── __main__.py              # Module entry point
-│       ├── 📁 core/
-│       │   ├── __init__.py
-│       │   └── legislation_scraper.py # Main scraper implementation
-│       ├── 📁 utils/
-│       │   ├── __init__.py
-│       │   └── config_manager.py    # Configuration management
-│       └── 📁 examples/
-│           ├── __init__.py
-│           ├── config_examples.py   # Configuration usage examples
-│           └── rapport_examples.py  # Rapport data access examples
-├── api/
-│   └── index.py                     # FastAPI app with embedded frontend
-├── vercel.json                      # Vercel deployment configuration
-├── run_scraper.py                   # Root-level entry point
-├── setup.py                         # Package installation
-├── requirements.txt                 # Python dependencies
-├── README.md                        # This file
-├── WEB_VIEWER_README.md             # Web viewer documentation
-├── PROJECT_STRUCTURE.md             # Detailed structure guide
-└── .gitignore                       # Git ignore rules
-```
+### **Protected Endpoints**
 
-## 🛠️ Installation
+#### **POST /api/legislation/refresh** - Refresh Data (🔒 Protected)
+- Triggers web scraping to refresh legislation data
+- **Authentication Required**: `X-API-Key` header
+- **Request Body**:
+  ```json
+  {
+    "max_pages": 5,
+    "force_rescrape": false
+  }
+  ```
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd moroccan-parliament-scraper
-   ```
+## 🔐 **Authentication**
 
-2. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
+Protected endpoints require an API key in the `X-API-Key` header:
 
-3. **Install the package** (optional, for console script access)
-   ```bash
-   pip install -e .
-   ```
-
-4. **Configure settings** (optional)
-   ```bash
-   # Edit config/scraper_config.json to customize settings
-   nano config/scraper_config.json
-   ```
-
-5. **Run the scraper**
-   ```bash
-   # Method 1: Direct execution
-   python3 run_scraper.py
-   
-   # Method 2: Module execution
-   python3 -m src.moroccan_parliament_scraper
-   
-   # Method 3: Console script (if installed)
-   moroccan-scraper
-   ```
-
-## 📋 Usage Examples
-
-### Basic Scraping
-```python
-from src.moroccan_parliament_scraper import MoroccanParliamentScraper
-
-scraper = MoroccanParliamentScraper()
-success = scraper.run()
-```
-
-### Force Re-scraping
-```python
-# Method 1: Via constructor
-scraper = MoroccanParliamentScraper(force_rescrape=True)
-success = scraper.run()
-
-# Method 2: Via config
-from src.moroccan_parliament_scraper import ConfigManager
-config = ConfigManager()
-config.set_force_rescrape(True)
-scraper = MoroccanParliamentScraper()
-success = scraper.run()
-```
-
-### Custom Configuration
-```python
-from src.moroccan_parliament_scraper import ConfigManager
-
-# Update configuration
-config = ConfigManager()
-config.set('scraper_settings.max_pages', 5)
-config.set('request_settings.delay_between_requests', 1)
-config.set('logging_settings.show_commission_checks', False)
-
-# Run with updated config
-scraper = MoroccanParliamentScraper()
-success = scraper.run()
-```
-
-### Proxy Usage
-```python
-from src.moroccan_parliament_scraper import ConfigManager
-
-config = ConfigManager()
-
-# Add your proxies
-proxies = [
-    {"http": "http://your-proxy:8080", "https": "http://your-proxy:8080"}
-]
-config.update_proxies(proxies)
-config.enable_proxies(True)
-
-# Run with proxies
-scraper = MoroccanParliamentScraper()
-success = scraper.run()
-```
-
-## 🔍 Data Access Examples
-
-### Accessing Rapport Data
-```python
-import json
-
-# Load the extracted data
-with open('data/extracted-data-2025.json', 'r', encoding='utf-8') as f:
-    data = json.load(f)
-
-# Filter for Lecture 2 items with rapport sections
-lecture2_items = [
-    item for item in data['data'] 
-    if item.get('stage') == 'Lecture 2' and 
-    item.get('deuxieme_lecture', {}).get('rapport_section')
-]
-
-# Access rapport files
-for item in lecture2_items:
-    rapport = item['deuxieme_lecture']['rapport_section']
-    print(f"Law {item['law_number']}: {rapport['section_title']}")
-    
-    for file in rapport['files']:
-        print(f"  - {file['title']}: {file['pdf_url']}")
-```
-
-### Running Example Scripts
 ```bash
-# Run configuration examples
-python3 -m src.moroccan_parliament_scraper.examples.config_examples
-
-# Run rapport access examples
-python3 -m src.moroccan_parliament_scraper.examples.rapport_examples
+curl -X POST "http://localhost:8000/api/legislation/refresh" \
+     -H "X-API-Key: your-secret-api-key-here" \
+     -H "Content-Type: application/json" \
+     -d '{"max_pages": 3, "force_rescrape": true}'
 ```
 
-## 🛡️ Ethical Scraping
+**Default API Key**: `your-secret-api-key-here` (change in production)
 
-- **Respectful Delays**: Configurable delays between requests
-- **User-Agent Headers**: Proper browser identification
-- **Rate Limiting**: Built-in request throttling
-- **Error Handling**: Graceful handling of server errors
-- **Session Management**: Efficient connection reuse
+## 🎯 **Key Features**
 
-## 🔮 Future Enhancements
+### **Data Management**
+- **Dynamic Data Loading**: Automatically detects current legislative year
+- **Smart Filtering**: Filter by stage, commission, or search terms
+- **PDF Integration**: Direct links to legislation PDFs when available
+- **Stage Tracking**: Detailed tracking of legislation through parliamentary stages
 
-- **Database Integration**: Store data in SQL/NoSQL databases
-- **API Development**: RESTful API for data access
-- **Scheduling**: Automated periodic scraping
-- **Notifications**: Email/SMS alerts for new legislation
-- **Analytics**: Data analysis and reporting features
-- **Web Interface**: Web-based configuration and monitoring
+### **Web Scraping**
+- **Intelligent Scraping**: Skips existing items for faster updates
+- **Force Re-scraping**: Option to refresh all data
+- **Vercel Compatibility**: Graceful handling of serverless limitations
+- **Local Execution**: Full scraping capabilities when run locally
 
-## 📊 Current Status
+### **User Interface**
+- **Responsive Design**: Works on desktop and mobile devices
+- **Interactive Filters**: Real-time search and filtering
+- **Collapsible Sections**: Detailed stage information on demand
+- **Statistics Dashboard**: Overview of legislation counts and status
 
-- **✅ Core Functionality**: Complete and tested
-- **✅ Configuration System**: Fully implemented
-- **✅ Proxy Support**: Ready for production use
-- **✅ Logging System**: Comprehensive and configurable
-- **✅ Error Handling**: Robust and reliable
-- **✅ Package Structure**: Professional organization
-- **✅ Multiple Entry Points**: Flexible execution options
-- **✅ File Organization**: Clean data and config management
-- **✅ Rapport Section Extraction**: Fixed and fully functional
-- **✅ Dynamic Web Viewer**: Modern, responsive interface with real-time data loading
-- **✅ Enhanced PDF Visibility**: Contextual, prominent download buttons
-- **✅ Documentation**: Complete and up-to-date
+## 🛠️ **Development**
 
-## 🤝 Contributing
+### **Project Structure Benefits**
+- **Separation of Concerns**: Routes, services, and models are clearly separated
+- **Easy Testing**: Each module can be tested independently
+- **Maintainability**: Code is organized and easy to navigate
+- **Extensibility**: New features can be added without affecting existing code
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+### **Adding New Endpoints**
+1. Create new route in `api/routes/`
+2. Add business logic in `api/services/`
+3. Define models in `api/models/`
+4. Include router in `api/main.py`
 
-## 📄 License
+### **Adding New Services**
+1. Create service class in `api/services/`
+2. Implement business logic methods
+3. Import and use in route handlers
+
+## 🚀 **Deployment**
+
+### **Local Development**
+```bash
+cd api
+python3 -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
+
+### **Production (Vercel)**
+The API is configured for Vercel deployment with:
+- Serverless function optimization
+- Automatic API documentation generation
+- Static file serving for frontend
+
+### **Environment Variables**
+```bash
+# Required for protected endpoints
+API_KEY=your-production-api-key-here
+
+# Vercel deployment
+VERCEL=1
+```
+
+## 📊 **Data Structure**
+
+### **Legislation Item**
+```json
+{
+  "law_number": "123-45",
+  "title": "Law Title",
+  "stage": "Lecture 1",
+  "commission": "Commission Name",
+  "ministry": "Ministry Name",
+  "url": "https://parliament.ma/...",
+  "pdf_url": "https://parliament.ma/pdf/...",
+  "scraped_at": "2024-01-15T10:30:00Z",
+  "premiere_lecture": { ... },
+  "deuxieme_lecture": { ... }
+}
+```
+
+### **Stage Information**
+```json
+{
+  "bureau_de_la_chambre": { ... },
+  "commission": { ... },
+  "seance_pleniere": { ... }
+}
+```
+
+## 🔧 **Configuration**
+
+### **Scraper Configuration**
+- **Max Pages**: Limit pages to scrape (default: 5)
+- **Force Re-scraping**: Override existing data (default: false)
+- **Commission Mapping**: Predefined commission IDs and names
+
+### **Data Storage**
+- **Dynamic File Naming**: Based on current legislative year
+- **JSON Format**: Structured data storage
+- **Automatic Backup**: Original data preserved during updates
+
+## 🐛 **Troubleshooting**
+
+### **Common Issues**
+
+#### **Import Errors**
+```bash
+# Ensure you're in the api directory
+cd api
+
+# Test imports
+python3 -c "from main import app; print('OK')"
+```
+
+#### **Authentication Issues**
+- Verify API key is correct
+- Check `X-API-Key` header is present
+- Ensure API key environment variable is set
+
+#### **Scraping Limitations on Vercel**
+- Vercel has 60-second timeout limits
+- Use existing data endpoints for production
+- Run scraping locally for data updates
+
+### **Debug Mode**
+Open browser console and call:
+```javascript
+debugRapportSections()
+```
+
+## 📈 **Performance**
+
+### **Optimizations**
+- **Lazy Loading**: Data loaded on demand
+- **Efficient Filtering**: Client-side filtering for better performance
+- **Caching**: Static data served efficiently
+- **Minimal Dependencies**: Lightweight, fast startup
+
+### **Scalability**
+- **Modular Design**: Easy to add new features
+- **Stateless Architecture**: Suitable for horizontal scaling
+- **API-First Design**: Can be consumed by multiple clients
+
+## 🤝 **Contributing**
+
+1. **Fork the repository**
+2. **Create feature branch**: `git checkout -b feature/new-feature`
+3. **Follow the modular structure** for new code
+4. **Test thoroughly** before submitting
+5. **Submit pull request** with clear description
+
+## 📄 **License**
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
+## 🆘 **Support**
+
+- **API Documentation**: `/docs` endpoint
+- **Issues**: GitHub Issues
+- **Questions**: Check the comprehensive `/api/status` endpoint
+
 ---
 
-**🎉 Ready for production use with comprehensive configuration management and professional package structure!**
+**🎉 The refactoring is complete!** Your API is now more maintainable, extensible, and developer-friendly while preserving all existing functionality.
