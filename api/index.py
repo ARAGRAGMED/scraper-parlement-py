@@ -19,6 +19,22 @@ current_dir = Path(__file__).parent
 src_dir = current_dir.parent / "src"
 sys.path.insert(0, str(src_dir))
 
+def get_data_file_path():
+    """Get the current year data file path dynamically"""
+    current_year = datetime.now().year
+    # Check if we're in the second half of the year (legislative year format)
+    if datetime.now().month >= 9:  # September onwards
+        # Use next year for legislative year (e.g., 2024-2025)
+        legislative_year = f"{current_year}-{current_year + 1}"
+        filename = f"extracted-data-{current_year + 1}.json"
+    else:
+        # Use current year for legislative year (e.g., 2024-2025)
+        legislative_year = f"{current_year - 1}-{current_year}"
+        filename = f"extracted-data-{current_year}.json"
+    
+    data_file = current_dir.parent / "data" / filename
+    return str(data_file), legislative_year
+
 try:
     from moroccan_parliament_scraper.core.legislation_scraper import MoroccanParliamentScraper
     SCRAPER_AVAILABLE = True
@@ -622,7 +638,7 @@ async def main_page():
                 <i class="fas fa-sync-alt"></i> Actualiser les Données
             </button>
                             <button id="start-scraping" class="btn btn-primary" style="padding: 10px 15px;">
-                    <i class="fas fa-rocket"></i> Actualiser les Données
+                    <i class="fas fa-rocket"></i> Scraper les Données
                 </button>
         </div>
 
@@ -1043,15 +1059,29 @@ async def main_page():
 async def get_all_legislation():
     """Get all legislation from local database"""
     try:
-        # Return empty state - in production this would query a real database
-        return {
-            "total_items": 0,
-            "current_year": 2025,
-            "scraped_at": None,
-            "data": [],
-            "message": "No legislation data available. Use /api/legislation/refresh to fetch data from source.",
-            "status": "empty"
-        }
+        # Try to read from the data file dynamically
+        data_file, legislative_year = get_data_file_path()
+        
+        if os.path.exists(data_file):
+            with open(data_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                return {
+                    "total_items": data.get("total_items", 0),
+                    "current_year": data.get("current_year", legislative_year),
+                    "scraped_at": data.get("scraped_at"),
+                    "data": data.get("data", []),
+                    "status": "success",
+                    "message": f"Retrieved {data.get('total_items', 0)} legislation items"
+                }
+        else:
+            return {
+                "total_items": 0,
+                "current_year": legislative_year,
+                "scraped_at": None,
+                "data": [],
+                "message": f"No legislation data available for {legislative_year}. Use /api/legislation/refresh to fetch data from source.",
+                "status": "empty"
+            }
     except Exception as e:
         return {
             "error": "Failed to retrieve legislation data",
@@ -1112,16 +1142,32 @@ async def get_legislation_by_stage(stage: str):
                 "timestamp": datetime.now().isoformat()
             }
         
-        # In production, this would filter the database by stage
+        # Try to read from the data file and filter by stage
+        data_file, legislative_year = get_data_file_path()
         stage_name = "Lecture 1" if stage == "1" else "Lecture 2"
         
-        return {
-            "stage": stage_name,
-            "stage_number": stage,
-            "total_items": 3,  # This would be the actual count from database
-            "message": f"Retrieved legislation for stage {stage}",
-            "timestamp": datetime.now().isoformat()
-        }
+        if os.path.exists(data_file):
+            with open(data_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                stage_data = [item for item in data.get("data", []) if item.get("stage") == stage_name]
+                
+                return {
+                    "stage": stage_name,
+                    "stage_number": stage,
+                    "total_items": len(stage_data),
+                    "data": stage_data,
+                    "message": f"Retrieved {len(stage_data)} legislation items for stage {stage}",
+                    "timestamp": datetime.now().isoformat()
+                }
+        else:
+            return {
+                "stage": stage_name,
+                "stage_number": stage,
+                "total_items": 0,
+                "data": [],
+                "message": f"No legislation data available for stage {stage}",
+                "timestamp": datetime.now().isoformat()
+            }
     except Exception as e:
         return {
             "error": "Failed to retrieve legislation by stage",
@@ -1166,14 +1212,31 @@ async def get_legislation_by_commission(commission_id: str):
                 "timestamp": datetime.now().isoformat()
             }
         
-        # In production, this would query the database by commission
-        return {
-            "commission_id": commission_id,
-            "commission_name": commission_names[commission_id],
-            "total_items": 2,  # This would be the actual count from database
-            "message": f"Retrieved legislation for commission {commission_id}",
-            "timestamp": datetime.now().isoformat()
-        }
+        # Try to read from the data file and filter by commission
+        data_file, legislative_year = get_data_file_path()
+        
+        if os.path.exists(data_file):
+            with open(data_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                commission_data = [item for item in data.get("data", []) if item.get("commission_id") == commission_id]
+                
+                return {
+                    "commission_id": commission_id,
+                    "commission_name": commission_names[commission_id],
+                    "total_items": len(commission_data),
+                    "data": commission_data,
+                    "message": f"Retrieved {len(commission_data)} legislation items for commission {commission_id}",
+                    "timestamp": datetime.now().isoformat()
+                }
+        else:
+            return {
+                "commission_id": commission_id,
+                "commission_name": commission_names[commission_id],
+                "total_items": 0,
+                "data": [],
+                "message": f"No legislation data available for commission {commission_id}",
+                "timestamp": datetime.now().isoformat()
+            }
     except Exception as e:
         return {
             "error": "Failed to retrieve legislation by commission",
@@ -1185,13 +1248,36 @@ async def get_legislation_by_commission(commission_id: str):
 async def get_legislation_by_numero(numero: str):
     """Get legislation from local database by law number"""
     try:
-        # In production, this would query the database by law number
-        return {
-            "law_number": numero,
-            "found": True,
-            "message": f"Retrieved legislation with number {numero}",
-            "timestamp": datetime.now().isoformat()
-        }
+        # Try to read from the data file and find by law number
+        data_file, legislative_year = get_data_file_path()
+        
+        if os.path.exists(data_file):
+            with open(data_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                legislation_item = next((item for item in data.get("data", []) if item.get("law_number") == numero), None)
+                
+                if legislation_item:
+                    return {
+                        "law_number": numero,
+                        "found": True,
+                        "data": legislation_item,
+                        "message": f"Retrieved legislation with number {numero}",
+                        "timestamp": datetime.now().isoformat()
+                    }
+                else:
+                    return {
+                        "law_number": numero,
+                        "found": False,
+                        "message": f"No legislation found with number {numero}",
+                        "timestamp": datetime.now().isoformat()
+                    }
+        else:
+            return {
+                "law_number": numero,
+                "found": False,
+                "message": f"No legislation data available",
+                "timestamp": datetime.now().isoformat()
+            }
     except Exception as e:
         return {
             "error": "Failed to retrieve legislation by number",
@@ -1333,6 +1419,8 @@ async def get_api_status():
         "database": {
             "status": "connected",
             "type": "local",
+            "data_file": get_data_file_path()[0],
+            "legislative_year": get_data_file_path()[1],
             "last_update": datetime.now().isoformat()
         },
         "commissions": {
