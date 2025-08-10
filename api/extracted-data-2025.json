@@ -1,0 +1,218 @@
+{
+  "current_year": "2024-2025",
+  "current_year_id": "15888",
+  "total_items": 6,
+  "scraped_at": "2025-08-10T17:40:19.308504",
+  "commission_used": "Multiple commissions identified",
+  "data_extraction_level": "Enhanced with page details and PDF links",
+  "pdf_links": "Available in pdf_url field for each legislation",
+  "duplicate_checking": "Enabled",
+  "data": [
+    {
+      "url": "https://www.chambredesrepresentants.ma/fr/%D8%A7%D9%84%D9%86%D8%B5%D9%88%D8%B5-%D8%A7%D9%84%D8%AA%D8%B4%D8%B1%D9%8A%D8%B9%D9%8A%D8%A9/projet-de-loi-ndeg0325-relatif-aux-organismes-de-placement-collectif-en-valeurs",
+      "title": "En cours d’examen en commission - Lecture 2Projet de loi N°03.25 relatif aux Organismes de Placement Collectif en Valeurs Mobilières",
+      "law_number": "03.25",
+      "full_title": "Projet de loi N°03.25 relatif aux Organismes de Placement Collectif en Valeurs Mobilières",
+      "full_text": "",
+      "pdf_url": "https://www.chambredesrepresentants.ma/sites/default/files/loi/Projet_%20loi_03.25_0%20%281%29.pdf",
+      "pdf_filename": "Projet_%20loi_03.25_0%20%281%29.pdf",
+      "page_content": "",
+      "extraction_timestamp": "2025-08-10T17:39:04.163910",
+      "page": 1,
+      "scraped_at": "2025-08-10T17:39:04.171816",
+      "commission": "Commission de justice, de législation, des droits de l'homme et des libertés",
+      "commission_id": "66",
+      "ministry_id": "To be identified",
+      "stage": "Lecture 2",
+      "premiere_lecture": {
+        "bureau_de_la_chambre": {
+          "texte_source": "Gouvernement",
+          "date_depot": "Mardi 8 avril 2025",
+          "texte_depose": "Le texte tel qu'il a été déposé au Bureau de la Chambre",
+          "pdf_link": "https://www.chambredesrepresentants.ma/sites/default/files/loi/Projet_%20loi_03.25_0%20%281%29.pdf"
+        },
+        "commission": {
+          "commission_name": "Commission des finances et du développement économique",
+          "submission_date": "Mercredi 16 avril 2025"
+        },
+        "seance_pleniere": {
+          "adoption_date": "Mardi 17 juin 2025Résultat du vote : Adopté à la Majorité - \"OUI\":132",
+          "vote_results": "Adopté à la Majorité - \"OUI\":132"
+        }
+      },
+      "deuxieme_lecture": {
+        "transfer_date": "Mercredi 23 juillet 2025",
+        "commission": {
+          "commission_name": "Commission des finances et du développement économique",
+          "submission_date": "Vendredi 25 juillet 2025"
+        },
+        "rapport_section": {
+          "section_title": "Rapport de la commission permanente - première lecture",
+          "files": [
+            {
+              "title": "Rapport de la Commission - 1ère partie(20.95 Mo)",
+              "url": "https://www.chambredesrepresentants.ma/sites/default/files/loi/Rapport-lec1-p1-0325_1.pdf",
+              "filename": "Rapport-lec1-p1-0325_1.pdf"
+            },
+            {
+              "title": "Rapport de la Commission - 2ème partie- version actualisée(5.21 Mo)",
+              "url": "https://www.chambredesrepresentants.ma/sites/default/files/loi/Rapport-lec1-p2-0325-MAJ4_0.pdf",
+              "filename": "Rapport-lec1-p2-0325-MAJ4_0.pdf"
+            }
+          ]
+        }
+      },
+      "ministry": "To be identified"
+    },
+    {
+      "url": "https://www.chambredesrepresentants.ma/fr/%D8%A7%D9%84%D9%86%D8%B5%D9%88%D8%B5-%D8%A7%D9%84%D8%AA%D8%B4%D8%B1%D9%8A%D8%B9%D9%8A%D8%A9/projet-de-loi-ndeg5423-modifiant-et-completant-la-loi-ndeg6500-relative-lassurance",
+      "title": "En cours d’examen en commission - Lecture 1Projet de loi N°54.23 modifiant et complétant la loi N°65.00 relative à l’Assurance-maladie obligatoire de base (AMO), ainsi que d’autres dispositions spécifiques",
+      "law_number": "54.23",
+      "full_title": "Projet de loi N°54.23 modifiant et complétant la loi N°65.00 relative à l’Assurance-maladie obligatoire de base (AMO), ainsi que d’autres dispositions spécifiques",
+      "full_text": "",
+      "pdf_url": "",
+      "pdf_filename": "",
+      "page_content": "",
+      "extraction_timestamp": "2025-08-10T17:39:11.229323",
+      "page": 1,
+      "scraped_at": "2025-08-10T17:39:11.233220",
+      "commission": "Commission des finances et du développement économique",
+      "commission_id": "67",
+      "ministry_id": "To be identified",
+      "stage": "Lecture 1",
+      "premiere_lecture": {
+        "bureau_de_la_chambre": {
+          "texte_source": "Chambre des Conseillers",
+          "date_depot": "Jeudi 10 juillet 2025",
+          "texte_depose": "",
+          "pdf_link": ""
+        },
+        "commission": {
+          "commission_name": "Commission des secteurs sociaux",
+          "submission_date": "Vendredi 11 juillet 2025"
+        }
+      },
+      "ministry": "To be identified"
+    },
+    {
+      "url": "https://www.chambredesrepresentants.ma/fr/%D8%A7%D9%84%D9%86%D8%B5%D9%88%D8%B5-%D8%A7%D9%84%D8%AA%D8%B4%D8%B1%D9%8A%D8%B9%D9%8A%D8%A9/projet-de-loi-ndeg1925-relatif-la-protection-des-animaux-errants-et-la-prevention",
+      "title": "En cours d’examen en commission - Lecture 1Projet de loi N°19.25 relatif à la protection des animaux errants et à la prévention des dangers qu’ils peuvent représenter",
+      "law_number": "19.25",
+      "full_title": "Projet de loi N°19.25 relatif à la protection des animaux errants et à la prévention des dangers qu’ils peuvent représenter",
+      "full_text": "",
+      "pdf_url": "https://www.chambredesrepresentants.ma/sites/default/files/loi/Projet_loi_19.25_0.pdf",
+      "pdf_filename": "Projet_loi_19.25_0.pdf",
+      "page_content": "",
+      "extraction_timestamp": "2025-08-10T17:39:17.390785",
+      "page": 1,
+      "scraped_at": "2025-08-10T17:39:17.395256",
+      "commission": "Commission des secteurs sociaux",
+      "commission_id": "68",
+      "ministry_id": "To be identified",
+      "stage": "Lecture 1",
+      "premiere_lecture": {
+        "bureau_de_la_chambre": {
+          "texte_source": "Gouvernement",
+          "date_depot": "Vendredi 18 juillet 2025",
+          "texte_depose": "Le texte tel qu'il a été déposé au Bureau de la Chambre",
+          "pdf_link": "https://www.chambredesrepresentants.ma/sites/default/files/loi/Projet_loi_19.25_0.pdf"
+        },
+        "commission": {
+          "commission_name": "Commission des secteurs productifs",
+          "submission_date": "Mardi 22 juillet 2025"
+        }
+      },
+      "ministry": "To be identified"
+    },
+    {
+      "url": "https://www.chambredesrepresentants.ma/fr/%D8%A7%D9%84%D9%86%D8%B5%D9%88%D8%B5-%D8%A7%D9%84%D8%AA%D8%B4%D8%B1%D9%8A%D8%B9%D9%8A%D8%A9/projet-de-loi-ndeg5624-portant-transformation-de-loffice-national-des",
+      "title": "En cours d’examen en commission - Lecture 1Projet de loi N°56.24 portant transformation de l’Office national des hydrocarbures et des mines (ONHYM) en société anonyme (SA)",
+      "law_number": "56.24",
+      "full_title": "Projet de loi N°56.24 portant transformation de l’Office national des hydrocarbures et des mines (ONHYM) en société anonyme (SA)",
+      "full_text": "",
+      "pdf_url": "https://www.chambredesrepresentants.ma/sites/default/files/loi/Projet_loi_56.24_0.pdf",
+      "pdf_filename": "Projet_loi_56.24_0.pdf",
+      "page_content": "",
+      "extraction_timestamp": "2025-08-10T17:39:22.225397",
+      "page": 1,
+      "scraped_at": "2025-08-10T17:39:22.230035",
+      "commission": "Commission des secteurs productifs",
+      "commission_id": "69",
+      "ministry_id": "To be identified",
+      "stage": "Lecture 1",
+      "premiere_lecture": {
+        "bureau_de_la_chambre": {
+          "texte_source": "Gouvernement",
+          "date_depot": "Vendredi 18 juillet 2025",
+          "texte_depose": "Le texte tel qu'il a été déposé au Bureau de la Chambre",
+          "pdf_link": "https://www.chambredesrepresentants.ma/sites/default/files/loi/Projet_loi_56.24_0.pdf"
+        },
+        "commission": {
+          "commission_name": "Commission des infrastructures, de l'énergie, des mines, de l'environnement et du développement durable",
+          "submission_date": "Mardi 22 juillet 2025"
+        }
+      },
+      "ministry": "To be identified"
+    },
+    {
+      "url": "https://www.chambredesrepresentants.ma/fr/%D8%A7%D9%84%D9%86%D8%B5%D9%88%D8%B5-%D8%A7%D9%84%D8%AA%D8%B4%D8%B1%D9%8A%D8%B9%D9%8A%D8%A9/projet-de-loi-ndeg2725-modifiant-et-completant-la-loi-ndeg8913-relative-au-statut",
+      "title": "En cours d’examen en commission - Lecture 1Projet de loi N°27.25 modifiant et complétant la loi N°89.13 relative au Statut des journalistes professionnels",
+      "law_number": "27.25",
+      "full_title": "Projet de loi N°27.25 modifiant et complétant la loi N°89.13 relative au Statut des journalistes professionnels",
+      "full_text": "",
+      "pdf_url": "",
+      "pdf_filename": "",
+      "page_content": "",
+      "extraction_timestamp": "2025-08-10T17:39:28.250457",
+      "page": 1,
+      "scraped_at": "2025-08-10T17:39:28.254897",
+      "commission": "Commission des infrastructures, de l'énergie, des mines, de l'environnement et du développement durable",
+      "commission_id": "70",
+      "ministry_id": "To be identified",
+      "stage": "Lecture 1",
+      "premiere_lecture": {
+        "bureau_de_la_chambre": {
+          "texte_source": "Gouvernement",
+          "date_depot": "Lundi 7 juillet 2025",
+          "texte_depose": "",
+          "pdf_link": ""
+        },
+        "commission": {
+          "commission_name": "Commission de l'enseignement, de la culture et de la communication",
+          "submission_date": "Lundi 7 juillet 2025"
+        }
+      },
+      "ministry": "To be identified"
+    },
+    {
+      "url": "https://www.chambredesrepresentants.ma/fr/%D8%A7%D9%84%D9%86%D8%B5%D9%88%D8%B5-%D8%A7%D9%84%D8%AA%D8%B4%D8%B1%D9%8A%D8%B9%D9%8A%D8%A9/projet-de-loi-ndeg5921-relatif-lenseignement-scolaire",
+      "title": "En cours d’examen en commission - Lecture 1Projet de loi N°59.21 relatif à l'enseignement scolaire",
+      "law_number": "59.21",
+      "full_title": "Projet de loi N°59.21 relatif à l'enseignement scolaire",
+      "full_text": "",
+      "pdf_url": "",
+      "pdf_filename": "",
+      "page_content": "",
+      "extraction_timestamp": "2025-08-10T17:39:30.599429",
+      "page": 1,
+      "scraped_at": "2025-08-10T17:39:30.603414",
+      "commission": "Commission des infrastructures, de l'énergie, des mines, de l'environnement et du développement durable",
+      "commission_id": "70",
+      "ministry_id": "To be identified",
+      "stage": "Lecture 1",
+      "premiere_lecture": {
+        "bureau_de_la_chambre": {
+          "texte_source": "Gouvernement",
+          "date_depot": "Mercredi 14 mai 2025",
+          "texte_depose": "",
+          "pdf_link": ""
+        },
+        "commission": {
+          "commission_name": "Commission de l'enseignement, de la culture et de la communication",
+          "submission_date": "Lundi 19 mai 2025"
+        }
+      },
+      "ministry": "To be identified"
+    }
+  ]
+}

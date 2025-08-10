@@ -27,7 +27,7 @@ class DataService:
             
             if not os.path.exists(data_file_path):
                 return {
-                    "total_count": 0,
+                    "total_items": 0,
                     "current_year": datetime.now().year,
                     "data": [],
                     "status": "no_data",
@@ -38,22 +38,22 @@ class DataService:
                 data = json.load(f)
             
             # Extract basic info
-            total_count = len(data.get('data', []))
+            total_items = len(data.get('data', []))
             current_year = data.get('current_year', datetime.now().year)
             scraped_at = data.get('scraped_at', datetime.now().isoformat())
             
             return {
-                "total_count": total_count,
+                "total_items": total_items,
                 "current_year": current_year,
                 "scraped_at": scraped_at,
                 "data": data.get('data', []),
-                "status": "success" if total_count > 0 else "empty",
-                "message": f"Successfully loaded {total_count} legislation items"
+                "status": "success" if total_items > 0 else "empty",
+                "message": f"Successfully loaded {total_items} legislation items"
             }
             
         except Exception as e:
             return {
-                "total_count": 0,
+                "total_items": 0,
                 "current_year": datetime.now().year,
                 "data": [],
                 "status": "error",
