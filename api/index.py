@@ -7,7 +7,7 @@ import json
 from datetime import datetime
 from typing import List, Dict, Any, Optional
 
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi import FastAPI, HTTPException, BackgroundTasks, APIRouter
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 import sys
@@ -29,6 +29,9 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# Create API router with /api prefix
+api_router = APIRouter(prefix="/api")
+
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
@@ -38,7 +41,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/")
+@api_router.get("/")
 async def root():
     """Root endpoint"""
     return {
@@ -56,7 +59,7 @@ async def root():
         }
     }
 
-@app.get("/health")
+@api_router.get("/health")
 async def health_check():
     """Health check endpoint"""
     return {
@@ -66,7 +69,7 @@ async def health_check():
         "timestamp": datetime.now().isoformat()
     }
 
-@app.get("/config")
+@api_router.get("/config")
 async def get_config():
     """Get current scraper configuration"""
     if not SCRAPER_AVAILABLE:
@@ -101,7 +104,7 @@ async def get_config():
             "timestamp": datetime.now().isoformat()
         }
 
-@app.get("/scrape")
+@api_router.get("/scrape")
 async def scrape_current_year():
     """Scrape current year legislation"""
     if not SCRAPER_AVAILABLE:
@@ -125,7 +128,7 @@ async def scrape_current_year():
             "timestamp": datetime.now().isoformat()
         }
 
-@app.post("/scrape")
+@api_router.post("/scrape")
 async def scrape_custom(background_tasks: BackgroundTasks):
     """Start custom scraping (POST method)"""
     if not SCRAPER_AVAILABLE:
@@ -148,7 +151,7 @@ async def scrape_custom(background_tasks: BackgroundTasks):
             "timestamp": datetime.now().isoformat()
         }
 
-@app.get("/status")
+@api_router.get("/status")
 async def get_status():
     """Get scraping status"""
     return {
@@ -163,7 +166,7 @@ async def get_status():
         "timestamp": datetime.now().isoformat()
     }
 
-@app.get("/test-scraper")
+@api_router.get("/test-scraper")
 async def test_scraper():
     """Test if scraper can be initialized"""
     if not SCRAPER_AVAILABLE:
@@ -185,3 +188,17 @@ async def test_scraper():
             "message": f"Error testing scraper: {str(e)}",
             "timestamp": datetime.now().isoformat()
         }
+
+# Include the API router
+app.include_router(api_router)
+
+# Add a root endpoint for the main page
+@app.get("/")
+async def main_page():
+    """Main page endpoint"""
+    return {
+        "message": "Moroccan Parliament Scraper - Main Page",
+        "api_docs": "/docs",
+        "api_endpoints": "/api/",
+        "frontend": "Visit the root URL for the viewer interface"
+    }
