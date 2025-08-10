@@ -2,29 +2,19 @@
   "version": 2,
   "builds": [
     {
-      "src": "api/*.py",
+      "src": "api/hello.py",
       "use": "@vercel/python"
     }
   ],
   "routes": [
     {
-      "src": "/test",
-      "dest": "/api/test.py"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/api/index.py"
+      "src": "/hello",
+      "dest": "/api/hello.py"
     }
   ],
   "functions": {
-    "api/index.py": {
-      "maxDuration": 30
-    },
-    "api/test.py": {
+    "api/hello.py": {
       "maxDuration": 10
     }
-  },
-  "env": {
-    "PYTHON_VERSION": "3.11"
   }
 }
