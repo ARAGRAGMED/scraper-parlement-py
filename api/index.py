@@ -982,6 +982,9 @@ async def main_page():
                 if (result.status === 'success') {
                     alert(`Actualisation terminée ! ${result.message}`);
                     loadData(); // Refresh the data
+                } else if (result.status === 'serverless_limited') {
+                    alert(`Scraping non disponible sur Vercel.\n\n${result.note}\n\nLes données existantes restent accessibles.`);
+                    loadData(); // Load existing data
                 } else {
                     const errorMsg = result.message || "Erreur lors de l'actualisation";
                     alert(errorMsg);
@@ -1213,50 +1216,27 @@ async def refresh_legislation_data():
         is_vercel = os.environ.get('VERCEL') == '1'
         
         if is_vercel:
-            # In serverless, try a very limited refresh (just 1-2 pages)
-            try:
-                scraper = MoroccanParliamentScraper()
-                # Very conservative limits for serverless
-                success = scraper.run(max_pages=2)
-                
-                if success:
-                    return {
-                        "message": "Limited legislation refresh completed in serverless environment",
-                        "status": "limited_success",
-                        "timestamp": datetime.now().isoformat(),
-                        "data": {
-                            "total_items": len(scraper.results) if hasattr(scraper, 'results') else 0,
-                            "scraped_at": datetime.now().isoformat()
-                        },
-                        "note": "Limited refresh completed within serverless constraints. Current data remains available.",
-                        "environment": "vercel_serverless",
-                        "limitations": [
-                            "Limited to 2 pages maximum",
-                            "60 second timeout limit",
-                            "1024 MB memory limit"
-                        ],
-                        "recommendation": "For full refresh, use local development environment or existing data is still accessible"
-                    }
-                else:
-                    return {
-                        "message": "Limited legislation refresh failed in serverless environment",
-                        "status": "limited_failed",
-                        "timestamp": datetime.now().isoformat(),
-                        "note": "Limited refresh failed - serverless constraints too restrictive",
-                        "environment": "vercel_serverless",
-                        "recommendation": "Use local development environment for full scraping functionality"
-                    }
-                    
-            except Exception as serverless_error:
-                return {
-                    "message": "Limited legislation refresh error in serverless environment",
-                    "status": "limited_error",
-                    "timestamp": datetime.now().isoformat(),
-                    "note": "Serverless environment too restrictive for scraping",
-                    "environment": "vercel_serverless",
-                    "error": str(serverless_error),
-                    "recommendation": "Use local development environment for full scraping functionality"
-                }
+            # Vercel serverless environment - scraping is not reliable
+            return {
+                "message": "Scraping not available in Vercel serverless environment",
+                "status": "serverless_limited",
+                "timestamp": datetime.now().isoformat(),
+                "note": "Vercel serverless functions cannot reliably perform web scraping due to strict limitations",
+                "environment": "vercel_serverless",
+                "limitations": [
+                    "60 second timeout limit (too short for web scraping)",
+                    "1024 MB memory limit (insufficient for BeautifulSoup parsing)",
+                    "Read-only file system (cannot save scraped data)",
+                    "Limited network requests and external connections"
+                ],
+                "current_data_status": "Available",
+                "recommendation": "Use existing data from /api/legislation endpoint. For fresh data, run scraping locally using 'python run_scraper.py'",
+                "actions": [
+                    "View current data: GET /api/legislation",
+                    "Check data status: GET /api/status",
+                    "Local scraping: python run_scraper.py"
+                ]
+            }
         
         # For non-serverless environments, attempt actual scraping
         try:
