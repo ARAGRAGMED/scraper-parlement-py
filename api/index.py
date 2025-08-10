@@ -8,7 +8,7 @@ from datetime import datetime
 from typing import List, Dict, Any, Optional
 
 from fastapi import FastAPI, HTTPException, BackgroundTasks, APIRouter
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 import sys
 import os
@@ -192,5 +192,94 @@ async def test_scraper():
 # Include the API router
 app.include_router(api_router)
 
-# Note: Root endpoint (/) is handled by Vercel routing to dynamic_viewer.html
-# No need for @app.get("/") here as it would conflict with Vercel's static file serving
+# Root endpoint for local development (serves dynamic_viewer.html content)
+@app.get("/")
+async def main_page():
+    """Main page endpoint - serves dynamic_viewer.html content locally"""
+    html_content = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moroccan Parliament Scraper - Dynamic Viewer</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; text-align: center; margin-bottom: 30px; }
+        .api-section { background: #ecf0f1; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        .endpoint { background: #3498db; color: white; padding: 10px; border-radius: 5px; margin: 10px 0; display: inline-block; }
+        .status { padding: 10px; border-radius: 5px; margin: 10px 0; }
+        .healthy { background: #27ae60; color: white; }
+        .error { background: #e74c3c; color: white; }
+        button { background: #3498db; color: white; border: none; padding: 12px 24px; border-radius: 5px; cursor: pointer; margin: 10px 5px; }
+        button:hover { background: #2980b9; }
+        .data-display { background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 10px 0; border-left: 4px solid #3498db; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🇲🇦 Moroccan Parliament Scraper - Dynamic Viewer</h1>
+        
+        <div class="api-section">
+            <h2>API Status</h2>
+            <div id="health-status" class="status">Checking...</div>
+            <button onclick="checkHealth()">Check Health</button>
+        </div>
+
+        <div class="api-section">
+            <h2>Available Endpoints</h2>
+            <div class="endpoint">GET /api/</div>
+            <div class="endpoint">GET /api/health</div>
+            <div class="endpoint">GET /api/config</div>
+            <div class="endpoint">GET /api/scrape</div>
+            <div class="endpoint">POST /api/scrape</div>
+            <div class="endpoint">GET /api/status</div>
+            <div class="endpoint">GET /api/test-scraper</div>
+        </div>
+
+        <div class="api-section">
+            <h2>Test API</h2>
+            <button onclick="testEndpoint('/api/')">Test API Root</button>
+            <button onclick="testEndpoint('/api/config')">Test Config</button>
+            <button onclick="testEndpoint('/api/status')">Test Status</button>
+            <div id="api-response" class="data-display"></div>
+        </div>
+    </div>
+
+    <script>
+        async function checkHealth() {
+            try {
+                const response = await fetch('/api/health');
+                const data = await response.json();
+                const statusDiv = document.getElementById('health-status');
+                statusDiv.className = 'status healthy';
+                statusDiv.innerHTML = `✅ Healthy - ${data.service} - ${data.timestamp}`;
+            } catch (error) {
+                const statusDiv = document.getElementById('health-status');
+                statusDiv.className = 'status error';
+                statusDiv.innerHTML = `❌ Error: ${error.message}`;
+            }
+        }
+
+        async function testEndpoint(endpoint) {
+            try {
+                const response = await fetch(endpoint);
+                const data = await response.json();
+                const responseDiv = document.getElementById('api-response');
+                responseDiv.innerHTML = `<strong>${endpoint}:</strong><br><pre>${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                const responseDiv = document.getElementById('api-response');
+                responseDiv.innerHTML = `<strong>${endpoint}:</strong><br><span style="color: red;">Error: ${error.message}</span>`;
+            }
+        }
+
+        // Check health on page load
+        window.onload = function() {
+            checkHealth();
+        };
+    </script>
+</body>
+</html>
+    """
+    return HTMLResponse(content=html_content, status_code=200)
