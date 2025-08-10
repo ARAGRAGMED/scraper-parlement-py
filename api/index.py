@@ -3,10 +3,17 @@
 Vercel Serverless Function for Moroccan Parliament Legislation API
 """
 
+import os
+import sys
+
+CURRENT_DIR = os.path.dirname(__file__)
+PROJECT_ROOT = os.path.abspath(os.path.join(CURRENT_DIR, ".."))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
-import json
 
 app = FastAPI(
     title="Moroccan Parliament Scraper API",
@@ -102,28 +109,3 @@ async def get_status():
         ],
         "timestamp": datetime.now().isoformat()
     }
-
-# Vercel serverless function handler - try different format
-def handler(request, context):
-    """Vercel serverless function handler"""
-    try:
-        from mangum import Mangum
-        
-        # Create Mangum handler for FastAPI
-        asgi_handler = Mangum(app)
-        
-        # Handle the request
-        return asgi_handler(request, context)
-    except Exception as e:
-        # Fallback response if mangum fails
-        return {
-            "statusCode": 200,
-            "headers": {
-                "Content-Type": "application/json"
-            },
-            "body": json.dumps({
-                "message": "API is working but mangum handler failed",
-                "error": str(e),
-                "timestamp": datetime.now().isoformat()
-            })
-        }
