@@ -50,10 +50,10 @@ app.add_middleware(
 
 
 
-# Root endpoint for the main page (serves dynamic_viewer.html content)
+# Root endpoint for the main page (serves the frontend directly)
 @app.get("/")
 async def main_page():
-    """Main page endpoint - serves dynamic_viewer.html content"""
+    """Main page endpoint - serves the frontend directly"""
     html_content = """<!DOCTYPE html>
 <html lang="en">
 <head>

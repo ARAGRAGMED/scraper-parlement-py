@@ -207,16 +207,13 @@ A beautiful, modern web interface to explore the scraped legislation data with r
 
 ### 🚀 Quick Start
 ```bash
-# Method 1: Auto-server (Recommended)
-python3 serve_web_viewer.py
+# Production (Vercel Deployment) - Recommended
+Visit: https://scraper-parlement-py-aicx.vercel.app/
 
-# Method 2: Static dynamic viewer (Recommended for production)
-python3 -m http.server 8080
-# Then go to http://localhost:8080/static_web_viewer.html
-
-# Method 3: Legacy static version
-python3 generate_static_viewer.py
-# Then open generated file in browser
+# Local Development
+cd api
+uvicorn index:app --reload --host 0.0.0.0 --port 8000
+# Then go to http://localhost:8000/
 ```
 
 ### ✨ Enhanced Features
@@ -294,10 +291,9 @@ moroccan-parliament-scraper/
 │           ├── __init__.py
 │           ├── config_examples.py   # Configuration usage examples
 │           └── rapport_examples.py  # Rapport data access examples
-├── web_viewer.html                  # Legacy web interface
-├── static_web_viewer.html           # Dynamic web viewer (recommended)
-├── serve_web_viewer.py              # Auto-server for web viewer
-├── generate_static_viewer.py        # Static viewer generator
+├── api/
+│   └── index.py                     # FastAPI app with embedded frontend
+├── vercel.json                      # Vercel deployment configuration
 ├── run_scraper.py                   # Root-level entry point
 ├── setup.py                         # Package installation
 ├── requirements.txt                 # Python dependencies

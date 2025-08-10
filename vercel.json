@@ -7,6 +7,6 @@
   },
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/index.py" },
-    { "source": "/", "destination": "/dynamic_viewer.html" }
+    { "source": "/", "destination": "/api/index.py" }
   ]
 }

@@ -2,7 +2,7 @@
 
 ## 📋 **Overview**
 
-This FastAPI application provides a RESTful API for the Moroccan Parliament Legislation Scraper. It serves scraped legislation data through optimized endpoints and includes a web interface for data visualization.
+This FastAPI application provides a RESTful API for the Moroccan Parliament Legislation Scraper. It serves scraped legislation data through optimized endpoints and includes an embedded web interface for data visualization directly in the API.
 
 ## 🚀 **Deployment**
 
@@ -101,7 +101,7 @@ scrap-parlement/
 │   └── moroccan_parliament_scraper/  # Core scraper module
 ├── data/                 # Scraped data storage
 ├── config/               # Configuration files
-├── dynamic_viewer.html   # Web interface
+├── api/index.py          # Vercel serverless function with embedded frontend
 └── vercel.json          # Vercel deployment config
 ```
 
