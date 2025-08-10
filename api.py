@@ -39,8 +39,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount static files
-app.mount("/static", StaticFiles(directory="."), name="static")
+# Mount static files (conditional for cloud deployment)
+if os.path.exists("."):
+    app.mount("/static", StaticFiles(directory="."), name="static")
 
 # Pydantic models
 class ScrapingRequest(BaseModel):
@@ -74,10 +75,39 @@ scraper_instance: Optional[MoroccanParliamentScraper] = None
 async def root():
     """Serve the main web viewer"""
     try:
-        with open("dynamic_viewer.html", "r", encoding="utf-8") as f:
-            return HTMLResponse(content=f.read())
-    except FileNotFoundError:
-        return HTMLResponse(content="<h1>Web viewer not found</h1>", status_code=404)
+        # Try multiple possible paths for cloud deployment
+        html_paths = [
+            "dynamic_viewer.html",
+            "./dynamic_viewer.html",
+            "/app/dynamic_viewer.html"
+        ]
+        
+        for html_path in html_paths:
+            if os.path.exists(html_path):
+                with open(html_path, "r", encoding="utf-8") as f:
+                    return HTMLResponse(content=f.read())
+        
+        # Fallback: return HTML content directly
+        return HTMLResponse(content="""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Moroccan Parliament API</title>
+            <meta charset="UTF-8">
+        </head>
+        <body>
+            <h1>🚀 Moroccan Parliament Legislation API</h1>
+            <p>API is running successfully!</p>
+            <ul>
+                <li><a href="/docs">📚 API Documentation</a></li>
+                <li><a href="/api/health">🔍 Health Check</a></li>
+                <li><a href="/api/legislation">📊 Legislation Data</a></li>
+            </ul>
+        </body>
+        </html>
+        """)
+    except Exception as e:
+        return HTMLResponse(content=f"<h1>Error loading web viewer</h1><p>{str(e)}</p>", status_code=500)
 
 @app.get("/api/health")
 async def health_check():
@@ -94,9 +124,28 @@ async def health_check():
 async def get_legislation():
     """Get all legislation data"""
     try:
-        data_file = f"data/extracted-data-{datetime.now().year}.json"
-        if not os.path.exists(data_file):
-            raise HTTPException(status_code=404, detail="No data found. Run scraper first.")
+        # Try multiple possible data file paths for cloud deployment
+        current_year = datetime.now().year
+        data_paths = [
+            f"data/extracted-data-{current_year}.json",
+            f"./data/extracted-data-{current_year}.json",
+            f"/app/data/extracted-data-{current_year}.json"
+        ]
+        
+        data_file = None
+        for path in data_paths:
+            if os.path.exists(path):
+                data_file = path
+                break
+        
+        if not data_file:
+            # Return empty data structure if no data file exists
+            return DataResponse(
+                current_year=str(current_year),
+                total_items=0,
+                scraped_at="No data available",
+                data=[]
+            )
         
         with open(data_file, 'r', encoding='utf-8') as f:
             data = json.load(f)
@@ -109,8 +158,21 @@ async def get_legislation():
 async def get_legislation_by_number(law_number: str):
     """Get specific legislation by law number"""
     try:
-        data_file = f"data/extracted-data-{datetime.now().year}.json"
-        if not os.path.exists(data_file):
+        # Try multiple possible data file paths for cloud deployment
+        current_year = datetime.now().year
+        data_paths = [
+            f"data/extracted-data-{current_year}.json",
+            f"./data/extracted-data-{current_year}.json",
+            f"/app/data/extracted-data-{current_year}.json"
+        ]
+        
+        data_file = None
+        for path in data_paths:
+            if os.path.exists(path):
+                data_file = path
+                break
+        
+        if not data_file:
             raise HTTPException(status_code=404, detail="No data found. Run scraper first.")
         
         with open(data_file, 'r', encoding='utf-8') as f:
@@ -128,8 +190,21 @@ async def get_legislation_by_number(law_number: str):
 async def get_legislation_by_stage(stage: str):
     """Get legislation by stage (Lecture 1, Lecture 2)"""
     try:
-        data_file = f"data/extracted-data-{datetime.now().year}.json"
-        if not os.path.exists(data_file):
+        # Try multiple possible data file paths for cloud deployment
+        current_year = datetime.now().year
+        data_paths = [
+            f"data/extracted-data-{current_year}.json",
+            f"./data/extracted-data-{current_year}.json",
+            f"/app/data/extracted-data-{current_year}.json"
+        ]
+        
+        data_file = None
+        for path in data_paths:
+            if os.path.exists(path):
+                data_file = path
+                break
+        
+        if not data_file:
             raise HTTPException(status_code=404, detail="No data found. Run scraper first.")
         
         with open(data_file, 'r', encoding='utf-8') as f:
@@ -164,13 +239,20 @@ async def start_scraping(request: ScrapingRequest, background_tasks: BackgroundT
         
         if success:
             # Get updated data count
-            data_file = f"data/extracted-data-{datetime.now().year}.json"
-            if os.path.exists(data_file):
-                with open(data_file, 'r', encoding='utf-8') as f:
-                    data = json.load(f)
-                data_count = len(data.get('data', []))
-            else:
-                data_count = 0
+            current_year = datetime.now().year
+            data_paths = [
+                f"data/extracted-data-{current_year}.json",
+                f"./data/extracted-data-{current_year}.json",
+                f"/app/data/extracted-data-{current_year}.json"
+            ]
+            
+            data_count = 0
+            for path in data_paths:
+                if os.path.exists(path):
+                    with open(path, 'r', encoding='utf-8') as f:
+                        data = json.load(f)
+                    data_count = len(data.get('data', []))
+                    break
             
             return ScrapingResponse(
                 success=True,
@@ -191,8 +273,21 @@ async def start_scraping(request: ScrapingRequest, background_tasks: BackgroundT
 async def get_statistics():
     """Get scraping statistics"""
     try:
-        data_file = f"data/extracted-data-{datetime.now().year}.json"
-        if not os.path.exists(data_file):
+        # Try multiple possible data file paths for cloud deployment
+        current_year = datetime.now().year
+        data_paths = [
+            f"data/extracted-data-{current_year}.json",
+            f"./data/extracted-data-{current_year}.json",
+            f"/app/data/extracted-data-{current_year}.json"
+        ]
+        
+        data_file = None
+        for path in data_paths:
+            if os.path.exists(path):
+                data_file = path
+                break
+        
+        if not data_file:
             return {
                 "status": "no_data",
                 "message": "No data found. Run scraper first."
@@ -226,10 +321,21 @@ async def get_statistics():
 @app.get("/api/data/{filename}")
 async def get_data_file(filename: str):
     """Get data files directly"""
-    data_dir = Path("data")
-    file_path = data_dir / filename
+    # Try multiple possible data directory paths for cloud deployment
+    data_paths = [
+        Path("data"),
+        Path("./data"),
+        Path("/app/data")
+    ]
     
-    if not file_path.exists() or not file_path.is_file():
+    file_path = None
+    for data_dir in data_paths:
+        potential_path = data_dir / filename
+        if potential_path.exists() and potential_path.is_file():
+            file_path = potential_path
+            break
+    
+    if not file_path:
         raise HTTPException(status_code=404, detail="File not found")
     
     return FileResponse(file_path, media_type="application/json")
