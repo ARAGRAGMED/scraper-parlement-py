@@ -1,0 +1,3 @@
+#!/bin/bash
+echo "Building Python serverless function..."
+echo "Build completed successfully"
